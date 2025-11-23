@@ -11,7 +11,7 @@ export async function login(formData: FormData) {
   }
 
   await createSession()
-  redirect('/admin')
+  redirect('/admin/dashboard')
 }
 
 export async function logout() {

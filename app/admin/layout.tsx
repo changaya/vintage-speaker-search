@@ -13,7 +13,7 @@ export default function AdminLayout({
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-8">
-              <Link href="/admin" className="text-xl font-bold">
+              <Link href="/admin/dashboard" className="text-xl font-bold">
                 🎵 Admin Panel
               </Link>
               <Link href="/admin/brands" className="hover:text-amber-200 transition-colors">
