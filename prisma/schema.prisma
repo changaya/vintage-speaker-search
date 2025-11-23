@@ -1,0 +1,237 @@
+// Prisma schema for Vintage Speaker Database
+// Supports complex relationships between speakers, cabinets, and drivers
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ====================
+// Core Entities
+// ====================
+
+model Brand {
+  id          String          @id @default(cuid())
+  name        String          @unique
+  country     String
+  foundedYear Int?
+  description String?
+  website     String?
+  speakers    SpeakerModel[]
+  series      SpeakerSeries[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model SpeakerModel {
+  id                String            @id @default(cuid())
+  name              String
+  brand             Brand             @relation(fields: [brandId], references: [id])
+  brandId           String
+  series            SpeakerSeries?    @relation(fields: [seriesId], references: [id])
+  seriesId          String?
+
+  // Support for model variants (e.g., L100 vs L100 Century vs L100T)
+  baseModel         SpeakerModel?     @relation("ModelVariants", fields: [baseModelId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  baseModelId       String?
+  variants          SpeakerModel[]    @relation("ModelVariants")
+
+  type              String            // Bookshelf, FloorStanding, Monitor, Horn, etc.
+  description       String?
+  country           String
+
+  cabinets          Cabinet[]
+  productionPeriods ProductionPeriod[]
+  measurements      MeasurementData[]
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([brandId])
+  @@index([seriesId])
+  @@index([baseModelId])
+}
+
+model Cabinet {
+  id                    String                     @id @default(cuid())
+  speakerModel          SpeakerModel               @relation(fields: [speakerModelId], references: [id], onDelete: Cascade)
+  speakerModelId        String
+
+  // Version tracking for production changes
+  versionNumber         Int                        @default(1)
+  versionName           String?                    // "Early Production", "Mid-70s Revision", etc.
+
+  // Cabinet specifications
+  enclosureType         String                     // Sealed, BassReflex, Horn, TransmissionLine, etc.
+  internalVolumeLiters  Float?
+  portDiameterMm        Float?
+  portLengthMm          Float?
+  tuningFrequencyHz     Float?
+
+  // Dimensions
+  heightMm              Float
+  widthMm               Float
+  depthMm               Float
+  weightKg              Float
+
+  // Materials
+  baffleMaterial        String?
+  cabinetMaterial       String?
+  internalDamping       String?
+  constructionNotes     String?
+
+  // Temporal validity
+  validFrom             DateTime?
+  validTo               DateTime?
+
+  driverConfigs         SpeakerDriverConfiguration[]
+
+  createdAt             DateTime                   @default(now())
+  updatedAt             DateTime                   @updatedAt
+
+  @@index([speakerModelId])
+}
+
+model Driver {
+  id                      String                     @id @default(cuid())
+  manufacturer            String
+  modelNumber             String
+  driverType              String                     // Woofer, Midrange, Tweeter, FullRange, Coaxial
+
+  // Basic specifications
+  nominalDiameterMm       Float
+  nominalImpedanceOhm     Float
+  powerHandlingRmsWatts   Float?
+  powerHandlingPeakWatts  Float?
+
+  // Thiele-Small Parameters (for simulation)
+  fsHz                    Float?                     // Resonant frequency
+  qts                     Float?                     // Total Q
+  qes                     Float?                     // Electrical Q
+  qms                     Float?                     // Mechanical Q
+  vasLiters               Float?                     // Equivalent compliance volume
+  sdCm2                   Float?                     // Effective piston area
+  xmaxMm                  Float?                     // Linear excursion
+  xmechMm                 Float?                     // Maximum excursion
+  reOhm                   Float?                     // DC resistance
+  leMh                    Float?                     // Voice coil inductance
+  blTm                    Float?                     // Force factor
+  mmsGrams                Float?                     // Moving mass
+  cmsUmN                  Float?                     // Compliance
+  rmsKgS                  Float?                     // Mechanical resistance
+  sensitivityDb           Float?                     // SPL at 1W/1m
+
+  // Frequency response
+  frequencyResponseLowerHz Float?
+  frequencyResponseUpperHz Float?
+
+  notes                   String?
+
+  speakerConfigs          SpeakerDriverConfiguration[]
+  compatibilityAsOriginal DriverCompatibility[]      @relation("OriginalDriver")
+  compatibilityAsReplacement DriverCompatibility[]   @relation("ReplacementDriver")
+  measurements            MeasurementData[]
+
+  createdAt               DateTime                   @default(now())
+  updatedAt               DateTime                   @updatedAt
+
+  @@unique([manufacturer, modelNumber])
+  @@index([manufacturer])
+  @@index([driverType])
+}
+
+// Junction table: Many-to-many relationship between Cabinets and Drivers
+model SpeakerDriverConfiguration {
+  id                  String     @id @default(cuid())
+  cabinet             Cabinet    @relation(fields: [cabinetId], references: [id], onDelete: Cascade)
+  cabinetId           String
+  driver              Driver     @relation(fields: [driverId], references: [id])
+  driverId            String
+
+  quantity            Int        @default(1)
+  position            String?    // "front-firing", "side-firing", "rear-firing"
+  role                String     // Woofer, Midrange, Tweeter, etc.
+  wiredImpedanceOhm   Float?     // Actual impedance after series/parallel wiring
+
+  createdAt           DateTime   @default(now())
+
+  @@index([cabinetId])
+  @@index([driverId])
+}
+
+// ====================
+// Relationship Tables
+// ====================
+
+model ProductionPeriod {
+  id                     String       @id @default(cuid())
+  speakerModel           SpeakerModel @relation(fields: [speakerModelId], references: [id], onDelete: Cascade)
+  speakerModelId         String
+
+  periodName             String       // "Early Production 1970-1972"
+  startYear              Int
+  endYear                Int?
+  distinguishingFeatures String?
+  serialNumberRange      String?
+
+  createdAt              DateTime     @default(now())
+
+  @@index([speakerModelId])
+}
+
+model DriverCompatibility {
+  id                   String            @id @default(cuid())
+  originalDriver       Driver            @relation("OriginalDriver", fields: [originalDriverId], references: [id])
+  originalDriverId     String
+  replacementDriver    Driver            @relation("ReplacementDriver", fields: [replacementDriverId], references: [id])
+  replacementDriverId  String
+
+  compatibilityType    String            // DirectReplacement, Compatible, RequiresModification
+  notes                String?
+  confidenceLevel      String            // Verified, Reported, Theoretical
+
+  createdAt            DateTime          @default(now())
+
+  @@index([originalDriverId])
+  @@index([replacementDriverId])
+}
+
+model SpeakerSeries {
+  id          String         @id @default(cuid())
+  brand       Brand          @relation(fields: [brandId], references: [id])
+  brandId     String
+  seriesName  String
+  description String?
+  yearsActive String?
+  speakers    SpeakerModel[]
+  createdAt   DateTime       @default(now())
+
+  @@index([brandId])
+}
+
+// ====================
+// Measurement Data
+// ====================
+
+model MeasurementData {
+  id               String        @id @default(cuid())
+  driver           Driver?       @relation(fields: [driverId], references: [id])
+  driverId         String?
+  speakerModel     SpeakerModel? @relation(fields: [speakerModelId], references: [id])
+  speakerModelId   String?
+
+  measurementType  String        // FrequencyResponse, Impedance, Distortion, Waterfall
+  fileFormat       String        // FRD, ZMA, JSON, CSV
+  filePath         String        // Storage path
+  measuredBy       String?
+  measurementDate  DateTime?
+  notes            String?
+
+  createdAt        DateTime      @default(now())
+
+  @@index([driverId])
+  @@index([speakerModelId])
+}
