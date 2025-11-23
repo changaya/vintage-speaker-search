@@ -9,7 +9,7 @@ interface PageProps {
 }
 
 export async function generateStaticParams() {
-  const speakers: Speaker[] = speakersData;
+  const speakers = speakersData as Speaker[];
 
   return speakers.map((speaker) => ({
     id: speaker.id,
@@ -18,7 +18,7 @@ export async function generateStaticParams() {
 
 export default async function SpeakerPage({ params }: PageProps) {
   const { id } = await params;
-  const speakers: Speaker[] = speakersData;
+  const speakers = speakersData as Speaker[];
   const speaker = speakers.find((s) => s.id === id);
 
   if (!speaker) {

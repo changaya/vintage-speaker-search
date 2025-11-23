@@ -7,7 +7,7 @@ import { Speaker, FilterOptions } from '@/types/speaker';
 import speakersData from '@/data/speakers.json';
 
 export default function Home() {
-  const speakers: Speaker[] = speakersData;
+  const speakers = speakersData as Speaker[];
 
   const [filters, setFilters] = useState<FilterOptions>({
     search: '',
