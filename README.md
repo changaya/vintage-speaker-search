@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎵 Vintage Speaker Search
+
+A web application for browsing and searching vintage and classic speakers from the golden age of audio.
+
+## Features
+
+- **Browse Catalog**: View a comprehensive collection of vintage speakers
+- **Advanced Search**: Filter by brand, type, year range, and keywords
+- **Detailed Information**: View complete specifications and descriptions
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
+
+## Tech Stack
+
+- **Next.js 14** with App Router
+- **TypeScript** for type safety
+- **Tailwind CSS** for styling
+- **Static JSON** data storage (prototype)
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 18+ installed
+- npm or yarn package manager
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/changaya/vintage-speaker-search.git
+cd vintage-speaker-search
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Run the development server:
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## Learn More
+## Available Scripts
 
-To learn more about Next.js, take a look at the following resources:
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+vintage-speaker-search/
+├── app/
+│   ├── page.tsx              # Home/listing page
+│   ├── speakers/[id]/        # Speaker detail pages
+│   ├── layout.tsx            # Root layout
+│   └── globals.css           # Global styles
+├── components/
+│   ├── SpeakerCard.tsx       # Speaker card component
+│   ├── SpeakerFilter.tsx     # Filter controls
+│   └── SpeakerDetail.tsx     # Detail view component
+├── data/
+│   └── speakers.json         # Speaker data
+└── types/
+    └── speaker.ts            # TypeScript interfaces
+```
 
-## Deploy on Vercel
+## Data Model
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Each speaker includes:
+- Name, brand, and year
+- Type (Bookshelf, Floor Standing, Monitor, Horn)
+- Detailed description
+- Technical specifications
+- Country of origin
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Future Enhancements
+
+- Add database integration (PostgreSQL/MongoDB)
+- Implement user authentication
+- Add user reviews and ratings
+- Include actual speaker images
+- Add comparison feature
+- Implement favorites/wishlist
+
+## License
+
+MIT

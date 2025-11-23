@@ -1,0 +1,218 @@
+[
+  {
+    "id": "1",
+    "name": "LS3/5A",
+    "brand": "BBC/Rogers",
+    "year": 1975,
+    "type": "Bookshelf",
+    "description": "Iconic BBC monitor speaker designed for broadcast monitoring. Known for its exceptional midrange clarity and natural sound reproduction.",
+    "specs": {
+      "driver": "5-inch bass/mid, 0.75-inch tweeter",
+      "frequency": "70Hz - 20kHz",
+      "impedance": "11Ω",
+      "sensitivity": "83dB",
+      "dimensions": "305 x 190 x 165mm",
+      "weight": "5.3kg"
+    },
+    "image": "/speakers/ls3-5a.jpg",
+    "country": "United Kingdom"
+  },
+  {
+    "id": "2",
+    "name": "JBL L100 Century",
+    "brand": "JBL",
+    "year": 1970,
+    "type": "Bookshelf",
+    "description": "The most popular speaker of the 1970s. Features distinctive blue foam grilles and powerful, dynamic sound.",
+    "specs": {
+      "driver": "12-inch woofer, 5-inch midrange, 1.5-inch tweeter",
+      "frequency": "30Hz - 15kHz",
+      "impedance": "8Ω",
+      "sensitivity": "91dB",
+      "dimensions": "635 x 381 x 305mm",
+      "weight": "27kg"
+    },
+    "image": "/speakers/jbl-l100.jpg",
+    "country": "United States"
+  },
+  {
+    "id": "3",
+    "name": "Klipschorn",
+    "brand": "Klipsch",
+    "year": 1946,
+    "type": "Horn",
+    "description": "Revolutionary corner horn speaker, continuously produced since 1946. Extremely efficient and dynamic sound.",
+    "specs": {
+      "driver": "15-inch woofer, horn-loaded midrange and tweeter",
+      "frequency": "33Hz - 17kHz",
+      "impedance": "8Ω",
+      "sensitivity": "105dB",
+      "dimensions": "1375 x 780 x 711mm",
+      "weight": "95kg"
+    },
+    "image": "/speakers/klipschorn.jpg",
+    "country": "United States"
+  },
+  {
+    "id": "4",
+    "name": "Yamaha NS-1000M",
+    "brand": "Yamaha",
+    "year": 1974,
+    "type": "Monitor",
+    "description": "Professional studio monitor with beryllium dome drivers. Prized for its accuracy and detailed sound.",
+    "specs": {
+      "driver": "12-inch woofer, beryllium midrange and tweeter",
+      "frequency": "30Hz - 20kHz",
+      "impedance": "8Ω",
+      "sensitivity": "90dB",
+      "dimensions": "648 x 386 x 318mm",
+      "weight": "29kg"
+    },
+    "image": "/speakers/ns-1000m.jpg",
+    "country": "Japan"
+  },
+  {
+    "id": "5",
+    "name": "KEF 104/2",
+    "brand": "KEF",
+    "year": 1984,
+    "type": "Floor Standing",
+    "description": "Reference-grade floor-standing speaker with KEF's innovative Uni-Q driver technology.",
+    "specs": {
+      "driver": "Dual 8-inch woofers, 5-inch Uni-Q midrange/tweeter",
+      "frequency": "35Hz - 20kHz",
+      "impedance": "4Ω",
+      "sensitivity": "88dB",
+      "dimensions": "1000 x 310 x 400mm",
+      "weight": "35kg"
+    },
+    "image": "/speakers/kef-104-2.jpg",
+    "country": "United Kingdom"
+  },
+  {
+    "id": "6",
+    "name": "Tannoy Arden",
+    "brand": "Tannoy",
+    "year": 1976,
+    "type": "Floor Standing",
+    "description": "Classic Dual Concentric design in beautiful wood cabinet. Warm, musical sound signature.",
+    "specs": {
+      "driver": "15-inch Dual Concentric driver",
+      "frequency": "30Hz - 20kHz",
+      "impedance": "8Ω",
+      "sensitivity": "93dB",
+      "dimensions": "940 x 610 x 410mm",
+      "weight": "50kg"
+    },
+    "image": "/speakers/tannoy-arden.jpg",
+    "country": "United Kingdom"
+  },
+  {
+    "id": "7",
+    "name": "Altec Lansing Model 19",
+    "brand": "Altec Lansing",
+    "year": 1968,
+    "type": "Floor Standing",
+    "description": "Professional cinema speaker adapted for home use. Powerful and efficient with classic horn design.",
+    "specs": {
+      "driver": "15-inch woofer, horn-loaded compression driver",
+      "frequency": "30Hz - 15kHz",
+      "impedance": "8Ω",
+      "sensitivity": "101dB",
+      "dimensions": "762 x 635 x 381mm",
+      "weight": "54kg"
+    },
+    "image": "/speakers/altec-19.jpg",
+    "country": "United States"
+  },
+  {
+    "id": "8",
+    "name": "Quad ESL-57",
+    "brand": "Quad",
+    "year": 1957,
+    "type": "Floor Standing",
+    "description": "Revolutionary electrostatic speaker. Legendary for its transparency and imaging capabilities.",
+    "specs": {
+      "driver": "Full-range electrostatic panel",
+      "frequency": "45Hz - 15kHz",
+      "impedance": "Variable",
+      "sensitivity": "86dB",
+      "dimensions": "914 x 876 x 267mm",
+      "weight": "18kg"
+    },
+    "image": "/speakers/quad-esl57.jpg",
+    "country": "United Kingdom"
+  },
+  {
+    "id": "9",
+    "name": "AR-3a",
+    "brand": "Acoustic Research",
+    "year": 1967,
+    "type": "Bookshelf",
+    "description": "Pioneering acoustic suspension design. Known for accurate bass response in compact enclosure.",
+    "specs": {
+      "driver": "12-inch woofer, 1.5-inch midrange, 0.75-inch tweeter",
+      "frequency": "38Hz - 20kHz",
+      "impedance": "4Ω",
+      "sensitivity": "87dB",
+      "dimensions": "660 x 356 x 292mm",
+      "weight": "23kg"
+    },
+    "image": "/speakers/ar-3a.jpg",
+    "country": "United States"
+  },
+  {
+    "id": "10",
+    "name": "B&W 801",
+    "brand": "Bowers & Wilkins",
+    "year": 1979,
+    "type": "Monitor",
+    "description": "Professional studio monitor used in Abbey Road Studios. Exceptional clarity and detail.",
+    "specs": {
+      "driver": "12-inch woofer, 5-inch midrange, 1-inch tweeter",
+      "frequency": "20Hz - 20kHz",
+      "impedance": "8Ω",
+      "sensitivity": "91dB",
+      "dimensions": "1150 x 520 x 460mm",
+      "weight": "70kg"
+    },
+    "image": "/speakers/bw-801.jpg",
+    "country": "United Kingdom"
+  },
+  {
+    "id": "11",
+    "name": "Wharfedale Super 3",
+    "brand": "Wharfedale",
+    "year": 1958,
+    "type": "Bookshelf",
+    "description": "British classic known for warm, musical sound. Popular in the late 1950s and 60s.",
+    "specs": {
+      "driver": "8-inch woofer, 3-inch tweeter",
+      "frequency": "45Hz - 14kHz",
+      "impedance": "8Ω",
+      "sensitivity": "88dB",
+      "dimensions": "508 x 279 x 229mm",
+      "weight": "11kg"
+    },
+    "image": "/speakers/wharfedale-super3.jpg",
+    "country": "United Kingdom"
+  },
+  {
+    "id": "12",
+    "name": "Infinity RS-1B",
+    "brand": "Infinity",
+    "year": 1984,
+    "type": "Floor Standing",
+    "description": "Massive reference speaker system with servo-controlled bass towers. Legendary high-end design.",
+    "specs": {
+      "driver": "12x 12-inch servo woofers, 6x 10-inch EMIM midrange, 72x 1-inch EMIT tweeters",
+      "frequency": "16Hz - 40kHz",
+      "impedance": "4Ω",
+      "sensitivity": "88dB",
+      "dimensions": "1830 x 762 x 610mm (per tower)",
+      "weight": "227kg (total system)"
+    },
+    "image": "/speakers/infinity-rs1b.jpg",
+    "country": "United States"
+  }
+]
