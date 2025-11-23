@@ -1,7 +1,14 @@
 import Link from 'next/link'
 import prisma from '@/lib/prisma'
+import { verifySession } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 
 export default async function AdminDashboard() {
+  // This will be caught by layout, but added for safety
+  const isAuthenticated = await verifySession()
+  if (!isAuthenticated) {
+    redirect('/admin/login')
+  }
   const stats = {
     brands: await prisma.brand.count(),
     speakers: await prisma.speakerModel.count(),
