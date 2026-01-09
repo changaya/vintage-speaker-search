@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* React Quill CSS */
+/* @import 'react-quill/dist/quill.snow.css'; */
+/* Custom styles below are sufficient */
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* React Quill Editor Styles */
+.quill {
+  background: white;
+  border-radius: 0.375rem;
+}
+
+.ql-container {
+  min-height: 200px;
+  font-size: 16px;
+  border-bottom-left-radius: 0.375rem;
+  border-bottom-right-radius: 0.375rem;
+}
+
+.ql-toolbar {
+  border-top-left-radius: 0.375rem;
+  border-top-right-radius: 0.375rem;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+}
+
+.ql-container {
+  border: 1px solid #d1d5db;
+  border-top: none;
+}
+
+.ql-editor {
+  min-height: 200px;
+}
+
+.ql-editor.ql-blank::before {
+  color: #9ca3af;
+  font-style: normal;
+}
+
+.ql-editor.ql-blank::before {
+  left: 12px;
+  right: 12px;
+}
+
+.ql-snow .ql-stroke {
+  stroke: #374151;
+}
+
+.ql-snow .ql-fill {
+  fill: #374151;
+}
+
+.ql-snow .ql-picker-label {
+  color: #374151;
+}
+
+.ql-snow .ql-picker-options {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+}
+
+.ql-snow .ql-picker-item:hover {
+  background: #f3f4f6;
+}
+
+.ql-snow .ql-tooltip {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.ql-snow .ql-tooltip input[type=text] {
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+}
+
+.ql-snow .ql-tooltip a.ql-action::after,
+.ql-snow .ql-tooltip a.ql-remove::after {
+  border-right: 1px solid #d1d5db;
+}

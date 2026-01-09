@@ -1,0 +1,675 @@
+// Vintage Audio Search & Match - Database Schema
+// Turntable System MVP
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// CORE ENTITIES
+// ============================================================================
+
+// Brand - Manufacturer information
+model Brand {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  nameJa      String?  // Japanese brand name
+  country     String?
+  foundedYear Int?
+  logoUrl     String?
+  description String? 
+  websiteUrl  String?
+
+  turntableBases TurntableBase[]
+  tonearms       Tonearm[]
+  cartridges     Cartridge[]
+  suts           SUT[]
+  phonoPreamps   PhonoPreamp[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+// TurntableBase - Turntable base/chassis
+model TurntableBase {
+  id          String   @id @default(uuid())
+  brandId     String
+  brand       Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  modelName   String
+  modelNumber String?
+
+  // Production information
+  productionPeriods ProductionPeriod[]
+
+  // Technical specifications - critical for matching
+  driveType        String         // "direct-drive", "belt-drive", "idler-drive"
+  motorType        String?        // "DC servo", "AC synchronous", etc.
+  platterMaterial  String?        // "aluminum", "acrylic", "steel", etc.
+  platterWeight    Float?         // kg
+  platterDiameter  Float?         // mm
+
+  // Speed and accuracy
+  speeds           String       // ["33.33", "45"]
+  wowFlutter       Float?         // % WRMS
+  speedAccuracy    Float?         // %
+
+  // Vibration control
+  suspensionType   String?        // "spring", "rubber", "magnetic", "rigid"
+  isolationFeet    String?
+
+  // Tonearm mounting - critical for compatibility
+  tonearmMounting  TonearmMounting?
+
+  // Dimensions and weight
+  width            Float?         // mm
+  depth            Float?         // mm
+  height           Float?         // mm
+  weight           Float?         // kg
+
+  // Power
+  powerConsumption Float?         // watts
+  voltage          String?        // "100V", "120V", "220V"
+
+  // Images and documentation
+  imageUrl         String?
+  specSheetUrl     String?
+  manualUrl        String?
+
+  // Data source
+  dataSource       String?
+  dataSourceUrl    String?
+
+  // Relationships
+  compatibleTonearms TonearmCompatibility[]
+  userSetups         UserSetup[]
+  reviews            Review[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([brandId, modelName])
+  @@index([brandId])
+  @@index([driveType])
+}
+
+// TonearmMounting - Detailed tonearm mounting specifications
+model TonearmMounting {
+  id                  String         @id @default(uuid())
+  turntableBaseId     String         @unique
+  turntableBase       TurntableBase  @relation(fields: [turntableBaseId], references: [id], onDelete: Cascade)
+
+  // Mounting type
+  mountingType        String         // "SME-standard", "universal", "proprietary"
+
+  // SME standard (most common)
+  smeStandard         String?        // "S-shape", "J-shape", "straight"
+  mountingHoleDist    Float?         // Distance between holes (mm) - SME is typically 23.01mm
+
+  // Custom mounting
+  pivotToSpindle      Float?         // mm - distance from pivot to spindle
+  overhang            Float?         // mm - recommended overhang
+
+  // Mounting board
+  armboardIncluded    Boolean        @default(false)
+  armboardMaterial    String?
+  armboardDimensions  String?        // "w x d x h mm"
+
+  // Height adjustment
+  heightAdjustable    Boolean        @default(false)
+  heightRange         String?        // "min-max mm"
+
+  notes               String?       
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Tonearm
+model Tonearm {
+  id          String   @id @default(uuid())
+  brandId     String
+  brand       Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  modelName   String
+  modelNumber String?
+
+  productionPeriods ProductionPeriod[]
+
+  // Basic specifications
+  armType          String         // "pivoted-9", "pivoted-10", "pivoted-12", "unipivot", "linear"
+  effectiveLength  Float?         // mm (9"=229mm, 10"=250mm, 12"=305mm)
+  effectiveMass    Float          // g - MOST IMPORTANT for matching!
+
+  // Structure and material
+  armTubeType      String?        // "S-shape", "J-shape", "straight"
+  armTubeMaterial  String?        // "carbon-fiber", "aluminum", "titanium", "magnesium"
+
+  // Bearing
+  bearingType      String?        // "gimbal", "unipivot", "magnetic"
+  bearingMaterial  String?        // "steel", "ceramic", "ruby"
+
+  // Cartridge mounting
+  headshellType    String         // "removable-SME", "removable-bayonet", "integrated"
+  headshellWeight  Float?         // g
+
+  // Adjustments
+  vtaAdjustable   Boolean        @default(false)
+  azimuthAdjust    Boolean        @default(false)
+
+  // Tracking force
+  vtfMin           Float?         // g
+  vtfMax           Float?         // g
+  vtfAdjustType    String?        // "counterweight", "spring", "magnetic"
+
+  // Anti-skating
+  antiSkateType    String?        // "weight", "spring", "magnetic", "none"
+
+  // Dimensions and weight
+  totalWeight      Float?         // g
+  height           Float?         // mm
+
+  // Mounting - turntable compatibility
+  mountingType     String?        // "SME-standard", "universal", "proprietary"
+
+  // Images and documentation
+  imageUrl         String?
+  specSheetUrl     String?
+  manualUrl        String?
+
+  dataSource       String?
+  dataSourceUrl    String?
+
+  // Relationships
+  compatibleBases    TonearmCompatibility[]
+  compatibleCarts    CartridgeCompatibility[]
+  userSetups         UserSetup[]
+  reviews            Review[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([brandId, modelName])
+  @@index([brandId])
+  @@index([effectiveMass])
+  @@index([armType])
+}
+
+// Cartridge
+model Cartridge {
+  id          String   @id @default(uuid())
+  brandId     String
+  brand       Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  modelName   String
+  modelNumber String?
+
+  productionPeriods ProductionPeriod[]
+
+  // Basic type
+  cartridgeType    String         // "MM" (Moving Magnet), "MC" (Moving Coil), "MI" (Moving Iron)
+
+  // Output - important for SUT/Phono matching
+  outputVoltage    Float?         // mV at 1kHz, 5cm/s
+  outputType       String?        // "high" (>2.5mV), "medium" (1-2.5mV), "low" (<1mV)
+  outputCategory   String?        // Optional output category
+
+  // Impedance - critical for matching
+  outputImpedance  Float?         // ohms (MC: 2-40, MM: 500-1000)
+  loadImpedance    Float?         // ohms (recommended)
+  loadCapacitance  Float?         // pF (MM cartridges)
+
+  // Electrical characteristics - important for SUT matching
+  dcResistance     Float?         // ohms (DC resistance of MC coil)
+  inductance       Float?         // mH (inductance for SUT impedance matching)
+
+  // Compliance - CRITICAL for tonearm matching
+  compliance       Float?         // μm/mN (10Hz) or cu (100Hz)
+  complianceFreq   String?        // "10Hz" or "100Hz"
+  complianceType   String?        // "dynamic-10hz", "dynamic-100hz", "static", "unknown"
+  complianceDirection String?     // "lateral", "vertical", "both", "unspecified"
+
+  // Weight - important for tonearm matching
+  cartridgeWeight  Float?         // g
+
+  // Tracking
+  trackingForceMin Float?         // g
+  trackingForceMax Float?         // g
+  trackingForceRec Float?         // g (recommended)
+
+  // Stylus
+  stylusType       String?        // "spherical", "elliptical", "line-contact", "shibata", "microline"
+  cantilevMaterial String?        // "aluminum", "boron", "ruby", "diamond", "beryllium"
+
+  // Frequency characteristics
+  freqRespLow      Float?         // Hz
+  freqRespHigh     Float?         // kHz
+  freqRespTolerance Float?        // dB
+  freqResponseRaw  String?        // Raw frequency response data (optional)
+
+  // Performance
+  channelSeparation Float?        // dB at 1kHz
+  channelBalance   Float?         // dB at 1kHz
+
+  // Dimensions
+  height           Float?         // mm
+  width            Float?         // mm
+  depth            Float?         // mm
+
+  // Mounting
+  mountingHoles    String?        // "standard-half-inch", "proprietary"
+  mountType        String?        // "half-inch", "p-mount", "integrated-spu", "sme-integrated", "other"
+
+  // Structure
+  bodyMaterial     String?        // "aluminum", "wood", "resin", etc.
+  verticalTrackingAngle Float?    // degrees (VTA)
+
+  // Recommended use
+  recommendedUse   String?        // "stereo", "mono", "78rpm", "universal"
+
+  // Replacement stylus
+  replacementStylus String?       // Replacement stylus model
+
+  imageUrl         String?
+  specSheetUrl     String?
+  dataSource       String?
+  dataSourceUrl    String?
+  specSourceUrl    String?        // Spec source URL
+  notes            String?  @db.Text      // Additional notes and special remarks
+
+  // Relationships
+  compatibleTonearms CartridgeCompatibility[]
+  compatibleSUTs     SUTCompatibility[]
+  compatiblePhonos   PhonoCompatibility[]
+  userSetups         UserSetup[]
+  reviews            Review[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([brandId, modelName])
+  @@index([brandId])
+  @@index([cartridgeType])
+  @@index([outputVoltage])
+  @@index([compliance])
+}
+
+// SUT (Step-Up Transformer) - For MC cartridges
+model SUT {
+  id          String   @id @default(uuid())
+  brandId     String
+  brand       Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  modelName   String
+  modelNumber String?
+
+  productionPeriods ProductionPeriod[]
+
+  // Transformer type
+  transformerType  String         @default("MC") // "MC", "MC-variable", "universal"
+
+  // Gain specifications - critical for matching
+  gainDb           Float?         // dB
+  gainRatio        String?        // "1:10", "1:20", etc.
+
+  // Impedance - important for cartridge matching
+  primaryImpedance Float?         // ohms (input - cartridge side)
+  secondaryImp     Float?         // ohms (output - phono side)
+
+  // Input settings
+  inputImpedance   String?        // ohms - selectable impedances
+  inputCapacitance Float?         // pF
+
+  // Frequency response
+  freqRespLow      Float?         // Hz
+  freqRespHigh     Float?         // kHz
+  freqRespTolerance Float?        // dB
+
+  // Core type
+  coreType         String?        // "permalloy", "amorphous", "crystal", "air-core"
+
+  // Connections
+  inputConnectors  String?        // ["RCA", "XLR", "DIN"]
+  outputConnectors String?
+
+  // Other
+  channels         Int            @default(2)
+  balanced         Boolean        @default(false)
+
+  // Dimensions and weight
+  width            Float?         // mm
+  depth            Float?         // mm
+  height           Float?         // mm
+  weight           Float?         // kg
+
+  imageUrl         String?
+  specSheetUrl     String?
+  dataSource       String?
+  dataSourceUrl    String?
+
+  // Relationships
+  compatibleCarts  SUTCompatibility[]
+  userSetups       UserSetup[]
+  reviews          Review[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([brandId, modelName])
+  @@index([brandId])
+  @@index([gainDb])
+}
+
+// PhonoPreamp
+model PhonoPreamp {
+  id          String   @id @default(uuid())
+  brandId     String
+  brand       Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  modelName   String
+  modelNumber String?
+
+  productionPeriods ProductionPeriod[]
+
+  // Supported cartridge types
+  supportsMM       Boolean        @default(true)
+  supportsMC       Boolean        @default(false)
+
+  // MM input
+  mmInputImpedance Float?         // ohms (typically 47k)
+  mmInputCapacitance Float?       // pF
+  mmGain           Float?         // dB
+
+  // MC input
+  mcInputImpedance String        // ohms - selectable impedances
+  mcInputCapacitance Float?       // pF
+  mcGain           Float?         // dB
+
+  // Gain adjustment
+  gainAdjustable   Boolean        @default(false)
+  gainRange        String?        // "40-60dB"
+
+  // Impedance adjustment
+  impedanceAdjust  Boolean        @default(false)
+  impedanceOptions String        // ohms
+
+  // Capacitance adjustment
+  capacitanceAdjust Boolean       @default(false)
+  capacitanceRange String?        // "100-500pF"
+
+  // Equalization
+  equalizationCurve String      // ["RIAA", "Decca", "Columbia", etc.]
+
+  // Performance specs
+  freqRespLow      Float?         // Hz
+  freqRespHigh     Float?         // kHz
+  thd              Float?         // % at 1kHz
+  snr              Float?         // dB
+
+  // Connections
+  inputConnectors  String       // ["RCA", "XLR", "DIN"]
+  outputConnectors String
+  balanced         Boolean        @default(false)
+
+  // Power
+  powerSupply      String?        // "internal", "external", "battery"
+  voltage          String?
+
+  // Tube/solid state
+  amplifierType    String?        // "tube", "solid-state", "hybrid"
+
+  // Dimensions and weight
+  width            Float?         // mm
+  depth            Float?         // mm
+  height           Float?         // mm
+  weight           Float?         // kg
+
+  imageUrl         String?
+  specSheetUrl     String?
+  dataSource       String?
+  dataSourceUrl    String?
+
+  // Relationships
+  compatibleCarts  PhonoCompatibility[]
+  userSetups       UserSetup[]
+  reviews          Review[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([brandId, modelName])
+  @@index([brandId])
+  @@index([supportsMM])
+  @@index([supportsMC])
+}
+
+// ============================================================================
+// COMPATIBILITY RELATIONSHIPS
+// ============================================================================
+
+// Turntable-Tonearm compatibility
+model TonearmCompatibility {
+  id                String         @id @default(uuid())
+  turntableBaseId   String
+  turntableBase     TurntableBase  @relation(fields: [turntableBaseId], references: [id], onDelete: Cascade)
+  tonearmId         String
+  tonearm           Tonearm        @relation(fields: [tonearmId], references: [id], onDelete: Cascade)
+
+  compatibilityScore Float         // 0-100
+  compatibilityType  String        // "perfect", "good", "requires-adapter", "not-recommended"
+
+  // Compatibility factors
+  mountingMatch      Boolean       @default(false)
+  dimensionsMatch    Boolean       @default(false)
+  requiresAdapter    Boolean       @default(false)
+  adapterDescription String?
+
+  notes              String?      
+  verifiedBy         String?       // "manufacturer", "user", "calculated"
+
+  // Usage frequency (for recommendation algorithm)
+  usageCount         Int           @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([turntableBaseId, tonearmId])
+  @@index([turntableBaseId])
+  @@index([tonearmId])
+  @@index([compatibilityScore])
+}
+
+// Tonearm-Cartridge compatibility
+model CartridgeCompatibility {
+  id                String         @id @default(uuid())
+  tonearmId         String
+  tonearm           Tonearm        @relation(fields: [tonearmId], references: [id], onDelete: Cascade)
+  cartridgeId       String
+  cartridge         Cartridge      @relation(fields: [cartridgeId], references: [id], onDelete: Cascade)
+
+  compatibilityScore Float         // 0-100
+  resonanceFreq      Float?        // Hz - calculated resonance frequency (ideal: 8-12Hz)
+
+  // Compatibility factors
+  massComplianceMatch String       // "excellent", "good", "acceptable", "poor"
+  trackingForceMatch Boolean       @default(false)
+
+  notes              String?      
+  verifiedBy         String?
+  usageCount         Int           @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tonearmId, cartridgeId])
+  @@index([tonearmId])
+  @@index([cartridgeId])
+  @@index([compatibilityScore])
+}
+
+// Cartridge-SUT compatibility
+model SUTCompatibility {
+  id                String         @id @default(uuid())
+  cartridgeId       String
+  cartridge         Cartridge      @relation(fields: [cartridgeId], references: [id], onDelete: Cascade)
+  sutId             String
+  sut               SUT            @relation(fields: [sutId], references: [id], onDelete: Cascade)
+
+  compatibilityScore Float         // 0-100
+
+  // Compatibility factors
+  impedanceMatch     String        // "perfect", "good", "acceptable", "poor"
+  gainAppropriate    Boolean       @default(false)
+
+  notes              String?      
+  verifiedBy         String?
+  usageCount         Int           @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartridgeId, sutId])
+  @@index([cartridgeId])
+  @@index([sutId])
+  @@index([compatibilityScore])
+}
+
+// Cartridge-PhonoPreamp compatibility
+model PhonoCompatibility {
+  id                String         @id @default(uuid())
+  cartridgeId       String
+  cartridge         Cartridge      @relation(fields: [cartridgeId], references: [id], onDelete: Cascade)
+  phonoPreampId     String
+  phonoPreamp       PhonoPreamp    @relation(fields: [phonoPreampId], references: [id], onDelete: Cascade)
+
+  compatibilityScore Float         // 0-100
+
+  // Compatibility factors
+  typeMatch          Boolean       @default(false)  // MM/MC type match
+  impedanceMatch     String        // "perfect", "good", "acceptable", "poor"
+  capacitanceMatch   String?       // For MM cartridges
+  gainAppropriate    Boolean       @default(false)
+
+  notes              String?      
+  verifiedBy         String?
+  usageCount         Int           @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartridgeId, phonoPreampId])
+  @@index([cartridgeId])
+  @@index([phonoPreampId])
+  @@index([compatibilityScore])
+}
+
+// ============================================================================
+// AUXILIARY ENTITIES
+// ============================================================================
+
+// Production period tracking (polymorphic)
+model ProductionPeriod {
+  id             String   @id @default(uuid())
+  periodName     String?  // "Mark I", "70th Anniversary", etc.
+  startYear      Int
+  endYear        Int?     // null means currently in production
+  distinguishing String? 
+
+  // Polymorphic relationship
+  componentType  String   // "turntable", "tonearm", "cartridge", "sut", "phono"
+  componentId    String
+
+  turntableBase  TurntableBase? @relation(fields: [componentId], references: [id], onDelete: Cascade, map: "ProductionPeriod_turntableBase_fkey")
+  tonearm        Tonearm?       @relation(fields: [componentId], references: [id], onDelete: Cascade, map: "ProductionPeriod_tonearm_fkey")
+  cartridge      Cartridge?     @relation(fields: [componentId], references: [id], onDelete: Cascade, map: "ProductionPeriod_cartridge_fkey")
+  sut            SUT?           @relation(fields: [componentId], references: [id], onDelete: Cascade, map: "ProductionPeriod_sut_fkey")
+  phonoPreamp    PhonoPreamp?   @relation(fields: [componentId], references: [id], onDelete: Cascade, map: "ProductionPeriod_phonoPreamp_fkey")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([componentType, componentId])
+}
+
+// User setup (real user combinations)
+model UserSetup {
+  id              String         @id @default(uuid())
+
+  turntableBaseId String?
+  turntableBase   TurntableBase? @relation(fields: [turntableBaseId], references: [id], onDelete: SetNull)
+
+  tonearmId       String?
+  tonearm         Tonearm?       @relation(fields: [tonearmId], references: [id], onDelete: SetNull)
+
+  cartridgeId     String?
+  cartridge       Cartridge?     @relation(fields: [cartridgeId], references: [id], onDelete: SetNull)
+
+  sutId           String?
+  sut             SUT?           @relation(fields: [sutId], references: [id], onDelete: SetNull)
+
+  phonoPreampId   String?
+  phonoPreamp     PhonoPreamp?   @relation(fields: [phonoPreampId], references: [id], onDelete: SetNull)
+
+  // User feedback
+  rating          Float?         // 1-5
+  comments        String?       
+
+  // Metadata
+  verified        Boolean        @default(false)
+  source          String?        // "user-submitted", "forum-data", "review-site"
+  sourceUrl       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([turntableBaseId])
+  @@index([tonearmId])
+  @@index([cartridgeId])
+  @@index([rating])
+}
+
+// Review (polymorphic)
+model Review {
+  id            String   @id @default(uuid())
+
+  // Polymorphic relationship
+  componentType String   // "turntable", "tonearm", "cartridge", "sut", "phono"
+  componentId   String
+
+  turntableBase TurntableBase? @relation(fields: [componentId], references: [id], onDelete: Cascade, map: "Review_turntableBase_fkey")
+  tonearm       Tonearm?       @relation(fields: [componentId], references: [id], onDelete: Cascade, map: "Review_tonearm_fkey")
+  cartridge     Cartridge?     @relation(fields: [componentId], references: [id], onDelete: Cascade, map: "Review_cartridge_fkey")
+  sut           SUT?           @relation(fields: [componentId], references: [id], onDelete: Cascade, map: "Review_sut_fkey")
+  phonoPreamp   PhonoPreamp?   @relation(fields: [componentId], references: [id], onDelete: Cascade, map: "Review_phonoPreamp_fkey")
+
+  rating        Float          // 1-5
+  title         String?
+  content       String        
+
+  // Source
+  source        String?        // "user-submitted", "imported"
+  sourceUrl     String?
+  authorName    String?
+
+  verified      Boolean        @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([componentType, componentId])
+  @@index([rating])
+}
+
+// Admin account
+model Admin {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  passwordHash String
+  email        String?  @unique
+  role         String   @default("admin")  // "admin", "moderator"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
