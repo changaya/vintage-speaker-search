@@ -57,5 +57,3 @@ export const updateCartridgeSchema = createCartridgeSchema.partial().extend({
   brandId: z.string().uuid().optional(),
 });
 
-export type CreateCartridgeInput = z.infer<typeof createCartridgeSchema>;
-export type UpdateCartridgeInput = z.infer<typeof updateCartridgeSchema>;

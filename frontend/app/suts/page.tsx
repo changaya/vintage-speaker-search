@@ -53,8 +53,8 @@ export default function SUTsPage() {
   const fetchSUTs = async () => {
     try {
       setLoading(true);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
-      const response = await fetch(`${apiUrl}/suts`);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+      const response = await fetch(`${apiUrl}/api/suts`);
 
       if (!response.ok) {
         throw new Error(`Failed to fetch SUTs: ${response.statusText}`);

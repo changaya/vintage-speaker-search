@@ -5,7 +5,7 @@
 
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { matcherRequestSchema } from '../schemas/matcher.schema';
+import { matcherRequestSchema } from '@vintage-audio/shared';
 import {
   calculateMatching,
   TonearmData,
@@ -278,7 +278,8 @@ export const calculateComponentMatching = async (req: Request, res: Response) =>
           id: phonoPreamp.id,
           brand: phonoPreamp.brand.name,
           model: phonoPreamp.modelName,
-          preampType: phonoPreamp.preampType,
+          supportsMM: phonoPreamp.supportsMM,
+          supportsMC: phonoPreamp.supportsMC,
           imageUrl: phonoPreamp.imageUrl,
         } : null,
       },

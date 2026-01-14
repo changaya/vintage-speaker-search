@@ -66,7 +66,7 @@ export default function TurntablesPage() {
 
   const fetchTurntables = async () => {
     try {
-      const response = await api.get<Turntable[]>('/turntables');
+      const response = await api.get<Turntable[]>('/api/turntables');
       setTurntables(response.data);
     } catch (error) {
       console.error('Failed to fetch turntables:', error);
@@ -78,7 +78,7 @@ export default function TurntablesPage() {
 
   const fetchBrands = async () => {
     try {
-      const response = await api.get<Brand[]>('/brands');
+      const response = await api.get<Brand[]>('/api/brands');
       setBrands(response.data);
     } catch (error) {
       console.error('Failed to fetch brands:', error);
@@ -110,7 +110,7 @@ export default function TurntablesPage() {
 
   const handleEdit = async (turntable: Turntable) => {
     try {
-      const response = await api.get(`/turntables/${turntable.id}`);
+      const response = await api.get(`/api/turntables/${turntable.id}`);
       const fullTurntable = response.data;
 
       setEditingTurntable(turntable);
@@ -139,7 +139,7 @@ export default function TurntablesPage() {
     }
 
     try {
-      await api.delete(`/turntables/${id}`);
+      await api.delete(`/api/turntables/${id}`);
       toast.success('Turntable deleted successfully');
       fetchTurntables();
     } catch (error: any) {
@@ -172,10 +172,10 @@ export default function TurntablesPage() {
 
     try {
       if (editingTurntable) {
-        await api.put(`/turntables/${editingTurntable.id}`, payload);
+        await api.put(`/api/turntables/${editingTurntable.id}`, payload);
         toast.success('Turntable updated successfully');
       } else {
-        await api.post('/turntables', payload);
+        await api.post('/api/turntables', payload);
         toast.success('Turntable created successfully');
       }
       setShowForm(false);

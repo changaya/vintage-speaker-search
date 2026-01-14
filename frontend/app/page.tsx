@@ -1,4 +1,47 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+
+interface Stats {
+  turntables: number;
+  tonearms: number;
+  cartridges: number;
+  suts: number;
+  phonoPreamps: number;
+}
+
 export default function HomePage() {
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+        const response = await fetch(`${apiUrl}/api/stats`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch stats');
+        }
+        const data = await response.json();
+        setStats(data);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+        // Keep stats as null to show fallback
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  const renderCount = (count: number | undefined) => {
+    if (loading) {
+      return <span className="inline-block w-8 h-8 bg-gray-200 rounded animate-pulse" />;
+    }
+    return count ?? '-';
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
@@ -17,7 +60,7 @@ export default function HomePage() {
         <div className="grid md:grid-cols-3 gap-8 mb-12">
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              🎚️ Technical Matching
+              Technical Matching
             </h3>
             <p className="text-gray-600">
               Advanced algorithms calculate resonance frequency, impedance matching, and gain staging
@@ -27,7 +70,7 @@ export default function HomePage() {
 
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              📊 Comprehensive Database
+              Comprehensive Database
             </h3>
             <p className="text-gray-600">
               Extensive collection of vintage turntables, tonearms, cartridges, SUTs, and phono preamps
@@ -37,7 +80,7 @@ export default function HomePage() {
 
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              💡 Smart Recommendations
+              Smart Recommendations
             </h3>
             <p className="text-gray-600">
               Hybrid recommendation system combining technical compatibility (70%) and real-world
@@ -71,19 +114,19 @@ export default function HomePage() {
         {/* Stats Section */}
         <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4">
           <a href="/turntables" className="bg-white p-4 rounded-lg shadow-sm border text-center hover:shadow-md transition-shadow">
-            <div className="text-3xl font-bold text-primary-600">20</div>
+            <div className="text-3xl font-bold text-primary-600">{renderCount(stats?.turntables)}</div>
             <div className="text-sm text-gray-600">Turntables</div>
           </a>
           <a href="/tonearms" className="bg-white p-4 rounded-lg shadow-sm border text-center hover:shadow-md transition-shadow">
-            <div className="text-3xl font-bold text-primary-600">22</div>
+            <div className="text-3xl font-bold text-primary-600">{renderCount(stats?.tonearms)}</div>
             <div className="text-sm text-gray-600">Tonearms</div>
           </a>
           <a href="/cartridges" className="bg-white p-4 rounded-lg shadow-sm border text-center hover:shadow-md transition-shadow">
-            <div className="text-3xl font-bold text-primary-600">14</div>
+            <div className="text-3xl font-bold text-primary-600">{renderCount(stats?.cartridges)}</div>
             <div className="text-sm text-gray-600">Cartridges</div>
           </a>
           <a href="/suts" className="bg-white p-4 rounded-lg shadow-sm border text-center hover:shadow-md transition-shadow">
-            <div className="text-3xl font-bold text-primary-600">2</div>
+            <div className="text-3xl font-bold text-primary-600">{renderCount(stats?.suts)}</div>
             <div className="text-sm text-gray-600">SUTs</div>
           </a>
         </div>

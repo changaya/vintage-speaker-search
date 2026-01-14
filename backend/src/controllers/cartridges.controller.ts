@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
-import { createCartridgeSchema, updateCartridgeSchema } from '../schemas/cartridge.schema';
+import { createCartridgeSchema, updateCartridgeSchema } from '@vintage-audio/shared';
 import {
   filterHiddenFields,
   filterHiddenFieldsArray,

@@ -63,5 +63,3 @@ export const updateTurntableSchema = createTurntableSchema.partial().extend({
   }).partial().optional(),
 });
 
-export type CreateTurntableInput = z.infer<typeof createTurntableSchema>;
-export type UpdateTurntableInput = z.infer<typeof updateTurntableSchema>;

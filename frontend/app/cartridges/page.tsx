@@ -56,8 +56,8 @@ export default function CartridgesPage() {
   const fetchCartridges = async () => {
     try {
       setLoading(true);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
-      const response = await fetch(`${apiUrl}/cartridges`);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+      const response = await fetch(`${apiUrl}/api/cartridges`);
 
       if (!response.ok) {
         throw new Error(`Failed to fetch cartridges: ${response.statusText}`);

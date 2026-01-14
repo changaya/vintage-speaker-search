@@ -260,14 +260,15 @@ export function getHiddenFields(modelName: keyof FieldVisibilityConfig): string[
  */
 export function isFieldVisible(modelName: keyof FieldVisibilityConfig, fieldName: string): boolean {
   const config = FIELD_VISIBILITY[modelName];
+  const { visible, hidden } = config;
 
-  // If visible list is null, all non-hidden fields are visible
-  if (config.visible === null) {
-    return !config.hidden.includes(fieldName);
+  // If visible list is null or undefined, all non-hidden fields are visible
+  if (visible === null || visible === undefined) {
+    return !hidden.includes(fieldName);
   }
 
   // Otherwise, check if field is in visible list
-  return config.visible.includes(fieldName);
+  return visible.includes(fieldName);
 }
 
 /**

@@ -47,8 +47,8 @@ export default function TonearmsPage() {
   const fetchTonearms = async () => {
     try {
       setLoading(true);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
-      const response = await fetch(`${apiUrl}/tonearms`);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+      const response = await fetch(`${apiUrl}/api/tonearms`);
 
       if (!response.ok) {
         throw new Error(`Failed to fetch tonearms: ${response.statusText}`);

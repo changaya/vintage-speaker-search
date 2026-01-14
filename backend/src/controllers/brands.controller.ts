@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
-import { createBrandSchema, updateBrandSchema } from '../schemas/brand.schema';
+import { createBrandSchema, updateBrandSchema } from '@vintage-audio/shared';
 
 /**
  * Get all brands

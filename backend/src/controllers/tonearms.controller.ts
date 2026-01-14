@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
-import { createTonearmSchema, updateTonearmSchema } from '../schemas/tonearm.schema';
+import { createTonearmSchema, updateTonearmSchema } from '@vintage-audio/shared';
 import {
   filterHiddenFields,
   filterHiddenFieldsArray,

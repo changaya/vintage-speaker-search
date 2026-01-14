@@ -17,7 +17,7 @@ export interface LoginResponse {
  * Login with username and password
  */
 export const login = async (username: string, password: string): Promise<LoginResponse> => {
-  const response = await api.post<LoginResponse>('/auth/login', {
+  const response = await api.post<LoginResponse>('/api/auth/login', {
     username,
     password,
   });
@@ -29,7 +29,7 @@ export const login = async (username: string, password: string): Promise<LoginRe
  */
 export const logout = async (): Promise<void> => {
   try {
-    await api.post('/auth/logout');
+    await api.post('/api/auth/logout');
   } finally {
     // Clear token from localStorage regardless of API response
     if (typeof window !== 'undefined') {
@@ -43,7 +43,7 @@ export const logout = async (): Promise<void> => {
  * Get current authenticated user
  */
 export const getCurrentUser = async (): Promise<Admin> => {
-  const response = await api.get<Admin>('/auth/me');
+  const response = await api.get<Admin>('/api/auth/me');
   return response.data;
 };
 

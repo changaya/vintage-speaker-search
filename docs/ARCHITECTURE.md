@@ -1,6 +1,6 @@
 # 시스템 아키텍처
 
-**최종 업데이트**: 2025-12-17
+**최종 업데이트**: 2026-01-12
 **버전**: 1.0.0
 
 ---
@@ -91,7 +91,7 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                      Database Layer                             │
 │  ┌──────────────────────────────────────────────────────────┐  │
-│  │  PostgreSQL                                              │  │
+│  │  MySQL                                                    │  │
 │  │  - Brands                                                │  │
 │  │  - Turntables, Tonearms, Cartridges                     │  │
 │  │  - SUTs, Phono Preamps                                   │  │
@@ -139,7 +139,7 @@
 | **Framework** | Express.js | HTTP 서버 |
 | **Language** | TypeScript | 타입 안전성 |
 | **ORM** | Prisma | 데이터베이스 ORM |
-| **Database** | PostgreSQL | 관계형 데이터베이스 |
+| **Database** | MySQL | 관계형 데이터베이스 |
 | **Validation** | Zod | 런타임 스키마 검증 |
 | **Authentication** | JWT | 토큰 기반 인증 |
 | **Password** | bcryptjs | 비밀번호 해싱 |
@@ -166,7 +166,7 @@ Express Router → Controller
   ↓
 Prisma ORM
   ↓
-PostgreSQL
+MySQL
   ↓
 JSON Response
   ↓
@@ -238,7 +238,7 @@ Zod Validation
   ↓
 Controller → Prisma
   ↓
-PostgreSQL INSERT
+MySQL INSERT
   ↓
 201 Created Response
   ↓
@@ -396,7 +396,7 @@ return "POOR";
 Developer Machine
   ├── Frontend: http://localhost:3000 (Next.js dev server)
   └── Backend: http://localhost:4000 (tsx watch)
-  └── Database: localhost:5432 (PostgreSQL)
+  └── Database: localhost:3306 (MySQL)
 ```
 
 ### 프로덕션 환경 (권장)
@@ -414,7 +414,7 @@ Developer Machine
         └───────────────┘  └───────────────┘
                                    ↓
                         ┌───────────────────┐
-                        │   PostgreSQL      │
+                        │      MySQL        │
                         │   (Railway DB)    │
                         └───────────────────┘
                                    ↓
@@ -443,21 +443,22 @@ services:
     ports:
       - "4000:4000"
     environment:
-      - DATABASE_URL=postgresql://user:pass@db:5432/vintage_audio
+      - DATABASE_URL=mysql://user:pass@db:3306/vintage_audio
     depends_on:
       - db
 
   db:
-    image: postgres:15
+    image: mysql:8
     environment:
-      - POSTGRES_DB=vintage_audio
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=pass
+      - MYSQL_DATABASE=vintage_audio
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=pass
+      - MYSQL_ROOT_PASSWORD=rootpass
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - mysqldata:/var/lib/mysql
 
 volumes:
-  pgdata:
+  mysqldata:
 ```
 
 ---
@@ -508,7 +509,7 @@ GET /api/brands
 Load Balancer
   ↓
 Backend Instance 1 ─┐
-Backend Instance 2 ─┼─ PostgreSQL (Primary)
+Backend Instance 2 ─┼─ MySQL (Primary)
 Backend Instance 3 ─┘
 ```
 

@@ -45,5 +45,3 @@ export const updateTonearmSchema = createTonearmSchema.partial().extend({
   brandId: z.string().uuid().optional(),
 });
 
-export type CreateTonearmInput = z.infer<typeof createTonearmSchema>;
-export type UpdateTonearmInput = z.infer<typeof updateTonearmSchema>;

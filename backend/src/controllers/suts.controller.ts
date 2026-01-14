@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
-import { createSutSchema, updateSutSchema } from '../schemas/sut.schema';
+import { createSutSchema, updateSutSchema } from '@vintage-audio/shared';
 import {
   filterHiddenFields,
   filterHiddenFieldsArray,

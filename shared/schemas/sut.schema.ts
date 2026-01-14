@@ -42,5 +42,3 @@ export const updateSutSchema = createSutSchema.partial().extend({
   brandId: z.string().uuid().optional(),
 });
 
-export type CreateSutInput = z.infer<typeof createSutSchema>;
-export type UpdateSutInput = z.infer<typeof updateSutSchema>;

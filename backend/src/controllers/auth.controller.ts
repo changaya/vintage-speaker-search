@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
 import { comparePassword } from '../utils/password';
 import { generateToken } from '../middleware/auth.middleware';
-import { loginSchema } from '../schemas/auth.schema';
+import { loginSchema } from '@vintage-audio/shared';
 
 /**
  * Login admin user

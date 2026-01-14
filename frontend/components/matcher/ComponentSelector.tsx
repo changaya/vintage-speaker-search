@@ -7,21 +7,22 @@
 
 import Select, { StylesConfig, GroupBase } from 'react-select';
 import type {
-  Tonearm,
-  Cartridge,
-  SUT,
-  PhonoPreamp,
+  TonearmWithBrand,
+  CartridgeWithBrand,
+  SUTWithBrand,
+  PhonoPreampWithBrand,
   ComponentOption,
   GroupedOption,
 } from '@/types/matcher';
 
-type Component = Tonearm | Cartridge | SUT | PhonoPreamp;
+// Component type with brand relation (as returned by API)
+type ComponentWithBrand = TonearmWithBrand | CartridgeWithBrand | SUTWithBrand | PhonoPreampWithBrand;
 
 interface ComponentSelectorProps {
   type: 'tonearm' | 'cartridge' | 'sut' | 'phonopreamp';
-  components: Component[];
-  selectedComponent: Component | null;
-  onSelect: (component: Component | null) => void;
+  components: ComponentWithBrand[];
+  selectedComponent: ComponentWithBrand | null;
+  onSelect: (component: ComponentWithBrand | null) => void;
   placeholder?: string;
   disabled?: boolean;
 }
@@ -53,8 +54,8 @@ export default function ComponentSelector({
         specs = component.cartridgeType;
       } else if (type === 'sut' && 'gainRatio' in component) {
         specs = component.gainRatio || `${component.gainDb}dB`;
-      } else if (type === 'phonopreamp' && 'preampType' in component) {
-        specs = component.preampType;
+      } else if (type === 'phonopreamp' && 'amplifierType' in component) {
+        specs = component.amplifierType || '';
       }
 
       acc[brandName].push({

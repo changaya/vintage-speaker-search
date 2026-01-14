@@ -5,6 +5,7 @@ import AuthGuard from '@/components/admin/AuthGuard';
 import AdminNav from '@/components/admin/AdminNav';
 import ImageUpload from '@/components/admin/ImageUpload';
 import BrandSelect from '@/components/admin/BrandSelect';
+import { TagInput } from '@/components/admin/forms';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
 
@@ -114,7 +115,7 @@ export default function PhonoPreampPage() {
 
   const fetchPhonoPreamps = async () => {
     try {
-      const response = await api.get<PhonoPreamp[]>('/phono-preamps');
+      const response = await api.get<PhonoPreamp[]>('/api/phono-preamps');
       setPhonoPreamps(response.data);
     } catch (error) {
       console.error('Failed to fetch phono preamps:', error);
@@ -126,7 +127,7 @@ export default function PhonoPreampPage() {
 
   const fetchBrands = async () => {
     try {
-      const response = await api.get<Brand[]>('/brands');
+      const response = await api.get<Brand[]>('/api/brands');
       setBrands(response.data);
     } catch (error) {
       console.error('Failed to fetch brands:', error);
@@ -185,7 +186,7 @@ export default function PhonoPreampPage() {
   const handleEdit = async (preamp: PhonoPreamp) => {
     try {
       // Fetch full Phono Preamp details
-      const response = await api.get(`/phono-preamps/${preamp.id}`);
+      const response = await api.get(`/api/phono-preamps/${preamp.id}`);
       const fullPreamp = response.data;
 
       setEditingPreamp(preamp);
@@ -240,7 +241,7 @@ export default function PhonoPreampPage() {
     }
 
     try {
-      await api.delete(`/phono-preamps/${id}`);
+      await api.delete(`/api/phono-preamps/${id}`);
       toast.success('Phono preamp deleted successfully');
       fetchPhonoPreamps();
     } catch (error: any) {
@@ -295,10 +296,10 @@ export default function PhonoPreampPage() {
 
     try {
       if (editingPreamp) {
-        await api.put(`/phono-preamps/${editingPreamp.id}`, payload);
+        await api.put(`/api/phono-preamps/${editingPreamp.id}`, payload);
         toast.success('Phono preamp updated successfully');
       } else {
-        await api.post('/phono-preamps', payload);
+        await api.post('/api/phono-preamps', payload);
         toast.success('Phono preamp created successfully');
       }
       setShowForm(false);
@@ -560,16 +561,13 @@ export default function PhonoPreampPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Impedance Options *
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.impedanceOptions}
-                        onChange={(e) => setFormData({ ...formData, impedanceOptions: e.target.value })}
+                      <TagInput
+                        label="Impedance Options (Ω)"
+                        value={JSON.parse(formData.impedanceOptions || '[]')}
+                        onChange={(arr) => setFormData({ ...formData, impedanceOptions: JSON.stringify(arr) })}
+                        suggestions={['100', '1000', '10000', '47000']}
                         required
-                        placeholder='["100", "1000", "47000"]'
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        helpText="Common impedance values for phono preamps"
                       />
                     </div>
 
@@ -608,16 +606,13 @@ export default function PhonoPreampPage() {
                   </h3>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Equalization Curve *
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.equalizationCurve}
-                        onChange={(e) => setFormData({ ...formData, equalizationCurve: e.target.value })}
+                      <TagInput
+                        label="Equalization Curve"
+                        value={JSON.parse(formData.equalizationCurve || '[]')}
+                        onChange={(arr) => setFormData({ ...formData, equalizationCurve: JSON.stringify(arr) })}
+                        suggestions={['RIAA', 'Columbia', 'Decca', 'FFRR']}
                         required
-                        placeholder='["RIAA"]'
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        helpText="Supported equalization curves"
                       />
                     </div>
 
@@ -686,30 +681,24 @@ export default function PhonoPreampPage() {
                   </h3>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Input Connectors *
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.inputConnectors}
-                        onChange={(e) => setFormData({ ...formData, inputConnectors: e.target.value })}
+                      <TagInput
+                        label="Input Connectors"
+                        value={JSON.parse(formData.inputConnectors || '[]')}
+                        onChange={(arr) => setFormData({ ...formData, inputConnectors: JSON.stringify(arr) })}
+                        suggestions={['RCA', 'XLR', 'DIN']}
                         required
-                        placeholder='["RCA"]'
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        helpText="Available input connector types"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Output Connectors *
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.outputConnectors}
-                        onChange={(e) => setFormData({ ...formData, outputConnectors: e.target.value })}
+                      <TagInput
+                        label="Output Connectors"
+                        value={JSON.parse(formData.outputConnectors || '[]')}
+                        onChange={(arr) => setFormData({ ...formData, outputConnectors: JSON.stringify(arr) })}
+                        suggestions={['RCA', 'XLR']}
                         required
-                        placeholder='["RCA"]'
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        helpText="Available output connector types"
                       />
                     </div>
 

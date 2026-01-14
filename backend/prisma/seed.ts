@@ -89,7 +89,6 @@ async function main() {
       brandId: technics.id,
       modelName: 'SL-1200MK2',
       driveType: 'direct-drive',
-      motorType: 'DC servo',
       platterMaterial: 'aluminum',
       platterWeight: 1.8,
       speeds: JSON.stringify(['33.33', '45']),

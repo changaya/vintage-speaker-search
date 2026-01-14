@@ -50,19 +50,16 @@ model TurntableBase {
 
   // Technical specifications - critical for matching
   driveType        String         // "direct-drive", "belt-drive", "idler-drive"
-  motorType        String?        // "DC servo", "AC synchronous", etc.
   platterMaterial  String?        // "aluminum", "acrylic", "steel", etc.
   platterWeight    Float?         // kg
   platterDiameter  Float?         // mm
 
   // Speed and accuracy
-  speeds           String       // ["33.33", "45"]
+  speeds           String         // ["33.33", "45"]
   wowFlutter       Float?         // % WRMS
-  speedAccuracy    Float?         // %
 
   // Vibration control
   suspensionType   String?        // "spring", "rubber", "magnetic", "rigid"
-  isolationFeet    String?
 
   // Tonearm mounting - critical for compatibility
   tonearmMounting  TonearmMounting?
@@ -75,12 +72,10 @@ model TurntableBase {
 
   // Power
   powerConsumption Float?         // watts
-  voltage          String?        // "100V", "120V", "220V"
 
   // Images and documentation
   imageUrl         String?
   specSheetUrl     String?
-  manualUrl        String?
 
   // Data source
   dataSource       String?
@@ -152,7 +147,6 @@ model Tonearm {
 
   // Bearing
   bearingType      String?        // "gimbal", "unipivot", "magnetic"
-  bearingMaterial  String?        // "steel", "ceramic", "ruby"
 
   // Cartridge mounting
   headshellType    String         // "removable-SME", "removable-bayonet", "integrated"
@@ -172,7 +166,6 @@ model Tonearm {
 
   // Dimensions and weight
   totalWeight      Float?         // g
-  height           Float?         // mm
 
   // Mounting - turntable compatibility
   mountingType     String?        // "SME-standard", "universal", "proprietary"
@@ -180,7 +173,6 @@ model Tonearm {
   // Images and documentation
   imageUrl         String?
   specSheetUrl     String?
-  manualUrl        String?
 
   dataSource       String?
   dataSourceUrl    String?
@@ -216,7 +208,6 @@ model Cartridge {
   // Output - important for SUT/Phono matching
   outputVoltage    Float?         // mV at 1kHz, 5cm/s
   outputType       String?        // "high" (>2.5mV), "medium" (1-2.5mV), "low" (<1mV)
-  outputCategory   String?        // Optional output category
 
   // Impedance - critical for matching
   outputImpedance  Float?         // ohms (MC: 2-40, MM: 500-1000)
@@ -231,7 +222,6 @@ model Cartridge {
   compliance       Float?         // μm/mN (10Hz) or cu (100Hz)
   complianceFreq   String?        // "10Hz" or "100Hz"
   complianceType   String?        // "dynamic-10hz", "dynamic-100hz", "static", "unknown"
-  complianceDirection String?     // "lateral", "vertical", "both", "unspecified"
 
   // Weight - important for tonearm matching
   cartridgeWeight  Float?         // g
@@ -249,7 +239,6 @@ model Cartridge {
   freqRespLow      Float?         // Hz
   freqRespHigh     Float?         // kHz
   freqRespTolerance Float?        // dB
-  freqResponseRaw  String?        // Raw frequency response data (optional)
 
   // Performance
   channelSeparation Float?        // dB at 1kHz
@@ -257,11 +246,8 @@ model Cartridge {
 
   // Dimensions
   height           Float?         // mm
-  width            Float?         // mm
-  depth            Float?         // mm
 
   // Mounting
-  mountingHoles    String?        // "standard-half-inch", "proprietary"
   mountType        String?        // "half-inch", "p-mount", "integrated-spu", "sme-integrated", "other"
 
   // Structure
@@ -278,7 +264,6 @@ model Cartridge {
   specSheetUrl     String?
   dataSource       String?
   dataSourceUrl    String?
-  specSourceUrl    String?        // Spec source URL
   notes            String?  @db.Text      // Additional notes and special remarks
 
   // Relationships
@@ -321,7 +306,6 @@ model SUT {
 
   // Input settings
   inputImpedance   String?        // ohms - selectable impedances
-  inputCapacitance Float?         // pF
 
   // Frequency response
   freqRespLow      Float?         // Hz
@@ -334,9 +318,6 @@ model SUT {
   // Connections
   inputConnectors  String?        // ["RCA", "XLR", "DIN"]
   outputConnectors String?
-
-  // Other
-  channels         Int            @default(2)
   balanced         Boolean        @default(false)
 
   // Dimensions and weight

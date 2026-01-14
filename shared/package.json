@@ -1,0 +1,23 @@
+{
+  "name": "@vintage-audio/shared",
+  "version": "1.0.0",
+  "description": "Shared types and schemas for Vintage Audio project",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "vintage-audio",
+    "types",
+    "schemas"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

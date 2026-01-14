@@ -107,8 +107,8 @@ export default function ImageUpload({
 
     // Internal URL (starts with /uploads/)
     if (imageUrl.startsWith('/uploads/')) {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
-      return apiUrl.replace('/api', imageUrl);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+      return `${apiUrl}${imageUrl}`;
     }
 
     // External URL

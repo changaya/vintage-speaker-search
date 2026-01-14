@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import AuthGuard from '@/components/admin/AuthGuard';
 import AdminNav from '@/components/admin/AdminNav';
-import ImageUpload from '@/components/admin/ImageUpload';
-import BrandSelect from '@/components/admin/BrandSelect';
+import { SUTForm } from './components/SUTForm';
 import { api } from '@/lib/api';
 import { FIELD_VISIBILITY } from '@/lib/field-visibility';
 import toast from 'react-hot-toast';
@@ -38,53 +37,16 @@ interface SUT {
   };
 }
 
-interface SUTFormData {
-  brandId: string;
-  modelName: string;
-  transformerType?: string;
-  gainDb: number | string;
-  gainRatio?: string;
-  inputImpedance?: number | string;
-  freqRespLow?: number | string;
-  freqRespHigh?: number | string;
-  inputConnectors?: string;
-  outputConnectors?: string;
-  channels?: number | string;
-  balanced: boolean;
-  weight?: number | string;
-  dataSource?: string;
-  dataSourceUrl?: string;
-  imageUrl?: string;
-}
-
 export default function SUTsPage() {
   const [suts, setSuts] = useState<SUT[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [editingSUT, setEditingSUT] = useState<SUT | undefined>();
-  const [formData, setFormData] = useState<SUTFormData>({
-    brandId: '',
-    modelName: '',
-    transformerType: '',
-    gainDb: '',
-    gainRatio: '',
-    inputImpedance: '',
-    freqRespLow: '',
-    freqRespHigh: '',
-    inputConnectors: '',
-    outputConnectors: '',
-    channels: '',
-    balanced: false,
-    weight: '',
-    dataSource: '',
-    dataSourceUrl: '',
-    imageUrl: '',
-  });
+  const [editingData, setEditingData] = useState<any | undefined>();
 
   const fetchSUTs = async () => {
     try {
-      const response = await api.get<SUT[]>('/suts');
+      const response = await api.get<SUT[]>('/api/suts');
       setSuts(response.data);
     } catch (error) {
       console.error('Failed to fetch SUTs:', error);
@@ -96,7 +58,7 @@ export default function SUTsPage() {
 
   const fetchBrands = async () => {
     try {
-      const response = await api.get<Brand[]>('/brands');
+      const response = await api.get<Brand[]>('/api/brands');
       setBrands(response.data);
     } catch (error) {
       console.error('Failed to fetch brands:', error);
@@ -110,52 +72,15 @@ export default function SUTsPage() {
   }, []);
 
   const handleCreate = () => {
-    setEditingSUT(undefined);
-    setFormData({
-      brandId: '',
-      modelName: '',
-      transformerType: '',
-      gainDb: '',
-      gainRatio: '',
-      inputImpedance: '',
-      freqRespLow: '',
-      freqRespHigh: '',
-      inputConnectors: '',
-      outputConnectors: '',
-      channels: '',
-      balanced: false,
-      weight: '',
-      dataSource: '',
-      dataSourceUrl: '',
-      imageUrl: '',
-    });
+    setEditingData(undefined);
     setShowForm(true);
   };
 
   const handleEdit = async (sut: SUT) => {
     try {
-      const response = await api.get(`/suts/${sut.id}`);
+      const response = await api.get(`/api/suts/${sut.id}`);
       const fullSUT = response.data;
-
-      setEditingSUT(sut);
-      setFormData({
-        brandId: fullSUT.brandId,
-        modelName: fullSUT.modelName,
-        transformerType: fullSUT.transformerType || '',
-        gainDb: fullSUT.gainDb || '',
-        gainRatio: fullSUT.gainRatio || '',
-        inputImpedance: fullSUT.inputImpedance || '',
-        freqRespLow: fullSUT.freqRespLow || '',
-        freqRespHigh: fullSUT.freqRespHigh || '',
-        inputConnectors: fullSUT.inputConnectors || '',
-        outputConnectors: fullSUT.outputConnectors || '',
-        channels: fullSUT.channels || '',
-        balanced: fullSUT.balanced || false,
-        weight: fullSUT.weight || '',
-        dataSource: fullSUT.dataSource || '',
-        dataSourceUrl: fullSUT.dataSourceUrl || '',
-        imageUrl: fullSUT.imageUrl || '',
-      });
+      setEditingData(fullSUT);
       setShowForm(true);
     } catch (error) {
       console.error('Failed to fetch SUT details:', error);
@@ -169,7 +94,7 @@ export default function SUTsPage() {
     }
 
     try {
-      await api.delete(`/suts/${id}`);
+      await api.delete(`/api/suts/${id}`);
       toast.success('SUT deleted successfully');
       fetchSUTs();
     } catch (error: any) {
@@ -179,34 +104,13 @@ export default function SUTsPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const payload = {
-      brandId: formData.brandId,
-      modelName: formData.modelName,
-      transformerType: formData.transformerType?.trim() || undefined,
-      gainDb: formData.gainDb ? Number(formData.gainDb) : undefined,
-      gainRatio: formData.gainRatio?.trim() || undefined,
-      inputImpedance: formData.inputImpedance ? Number(formData.inputImpedance) : undefined,
-      freqRespLow: formData.freqRespLow ? Number(formData.freqRespLow) : undefined,
-      freqRespHigh: formData.freqRespHigh ? Number(formData.freqRespHigh) : undefined,
-      inputConnectors: formData.inputConnectors?.trim() || undefined,
-      outputConnectors: formData.outputConnectors?.trim() || undefined,
-      channels: formData.channels ? Number(formData.channels) : undefined,
-      balanced: formData.balanced,
-      weight: formData.weight ? Number(formData.weight) : undefined,
-      dataSource: formData.dataSource?.trim() || undefined,
-      dataSourceUrl: formData.dataSourceUrl?.trim() || undefined,
-      imageUrl: formData.imageUrl?.trim() || undefined,
-    };
-
+  const handleFormSubmit = async (data: any) => {
     try {
-      if (editingSUT) {
-        await api.put(`/suts/${editingSUT.id}`, payload);
+      if (editingData?.id) {
+        await api.put(`/api/suts/${editingData.id}`, data);
         toast.success('SUT updated successfully');
       } else {
-        await api.post('/suts', payload);
+        await api.post('/api/suts', data);
         toast.success('SUT created successfully');
       }
       setShowForm(false);
@@ -215,6 +119,7 @@ export default function SUTsPage() {
       console.error('Submit error:', error);
       const message = error.response?.data?.message || 'Failed to save SUT';
       toast.error(message);
+      throw error; // Re-throw to let form handle submission state
     }
   };
 
@@ -240,235 +145,14 @@ export default function SUTsPage() {
           {showForm && (
             <div className="mb-8 bg-white shadow rounded-lg p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                {editingSUT ? 'Edit SUT' : 'Create New SUT'}
+                {editingData?.id ? 'Edit SUT' : 'Create New SUT'}
               </h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Basic Information */}
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-3 pb-2 border-b">
-                    Basic Information
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Brand *</label>
-                      <BrandSelect
-                        value={formData.brandId}
-                        onChange={(brandId) => setFormData({ ...formData, brandId })}
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Model Name *</label>
-                      <input
-                        type="text"
-                        value={formData.modelName}
-                        onChange={(e) => setFormData({ ...formData, modelName: e.target.value })}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Transformer Type</label>
-                      <input
-                        type="text"
-                        value={formData.transformerType}
-                        onChange={(e) => setFormData({ ...formData, transformerType: e.target.value })}
-                        placeholder="e.g., MC Step-Up, Moving Coil"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Electrical Specifications */}
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-3 pb-2 border-b">
-                    Electrical Specifications
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Gain (dB)</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        value={formData.gainDb}
-                        onChange={(e) => setFormData({ ...formData, gainDb: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Gain Ratio</label>
-                      <input
-                        type="text"
-                        value={formData.gainRatio}
-                        onChange={(e) => setFormData({ ...formData, gainRatio: e.target.value })}
-                        placeholder="e.g., 1:10, 1:20"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Input Impedance (Ω)</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        value={formData.inputImpedance}
-                        onChange={(e) => setFormData({ ...formData, inputImpedance: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Channels</label>
-                      <input
-                        type="number"
-                        value={formData.channels}
-                        onChange={(e) => setFormData({ ...formData, channels: e.target.value })}
-                        placeholder="e.g., 2"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Frequency Response Low (Hz)</label>
-                      <input
-                        type="number"
-                        value={formData.freqRespLow}
-                        onChange={(e) => setFormData({ ...formData, freqRespLow: e.target.value })}
-                        placeholder="e.g., 20"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Frequency Response High (Hz)</label>
-                      <input
-                        type="number"
-                        value={formData.freqRespHigh}
-                        onChange={(e) => setFormData({ ...formData, freqRespHigh: e.target.value })}
-                        placeholder="e.g., 20000"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                    </div>
-
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={formData.balanced}
-                        onChange={(e) => setFormData({ ...formData, balanced: e.target.checked })}
-                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                      />
-                      <label className="ml-2 block text-sm text-gray-700">Balanced</label>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Connectors */}
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-3 pb-2 border-b">
-                    Connectors
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Input Connectors</label>
-                      <input
-                        type="text"
-                        value={formData.inputConnectors}
-                        onChange={(e) => setFormData({ ...formData, inputConnectors: e.target.value })}
-                        placeholder="e.g., RCA, XLR"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Output Connectors</label>
-                      <input
-                        type="text"
-                        value={formData.outputConnectors}
-                        onChange={(e) => setFormData({ ...formData, outputConnectors: e.target.value })}
-                        placeholder="e.g., RCA, XLR"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Physical */}
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-3 pb-2 border-b">
-                    Physical
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        value={formData.weight}
-                        onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Data Source */}
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-3 pb-2 border-b">Data Source</h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Data Source</label>
-                      <input
-                        type="text"
-                        value={formData.dataSource}
-                        onChange={(e) => setFormData({ ...formData, dataSource: e.target.value })}
-                        placeholder="e.g., manufacturer, hifi-engine"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Data Source URL</label>
-                      <input
-                        type="url"
-                        value={formData.dataSourceUrl}
-                        onChange={(e) => setFormData({ ...formData, dataSourceUrl: e.target.value })}
-                        placeholder="https://..."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Image */}
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-3 pb-2 border-b">Image</h3>
-                  <ImageUpload
-                    currentImageUrl={formData.imageUrl}
-                    onImageUploaded={(url) => setFormData({ ...formData, imageUrl: url })}
-                    label="SUT Image"
-                  />
-                </div>
-
-                <div className="flex justify-end space-x-3 pt-4 border-t">
-                  <button
-                    type="button"
-                    onClick={() => setShowForm(false)}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
-                  >
-                    {editingSUT ? 'Update' : 'Create'}
-                  </button>
-                </div>
-              </form>
+              <SUTForm
+                initialData={editingData}
+                onSubmit={handleFormSubmit}
+                onCancel={() => setShowForm(false)}
+                isEditing={!!editingData?.id}
+              />
             </div>
           )}
 

@@ -13,4 +13,3 @@ export const matcherRequestSchema = z.object({
   headshellWeight: z.number().min(0).max(20).optional(),
 });
 
-export type MatcherRequest = z.infer<typeof matcherRequestSchema>;

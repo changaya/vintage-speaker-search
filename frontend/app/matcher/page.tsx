@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import type {
-  Tonearm,
-  Cartridge,
-  SUT,
-  PhonoPreamp,
+  TonearmWithBrand,
+  CartridgeWithBrand,
+  SUTWithBrand,
+  PhonoPreampWithBrand,
   MatcherResponse,
 } from '@/types/matcher';
 import { calculateMatching } from '@/lib/matcher-api';
@@ -14,17 +14,17 @@ import ComponentSelector from '@/components/matcher/ComponentSelector';
 import MatchingResults from '@/components/matcher/MatchingResults';
 
 export default function MatcherPage() {
-  // Component data
-  const [tonearms, setTonearms] = useState<Tonearm[]>([]);
-  const [cartridges, setCartridges] = useState<Cartridge[]>([]);
-  const [suts, setSuts] = useState<SUT[]>([]);
-  const [phonoPreamps, setPhonoPreamps] = useState<PhonoPreamp[]>([]);
+  // Component data (with brand relations from API)
+  const [tonearms, setTonearms] = useState<TonearmWithBrand[]>([]);
+  const [cartridges, setCartridges] = useState<CartridgeWithBrand[]>([]);
+  const [suts, setSuts] = useState<SUTWithBrand[]>([]);
+  const [phonoPreamps, setPhonoPreamps] = useState<PhonoPreampWithBrand[]>([]);
 
   // Selected components
-  const [selectedTonearm, setSelectedTonearm] = useState<Tonearm | null>(null);
-  const [selectedCartridge, setSelectedCartridge] = useState<Cartridge | null>(null);
-  const [selectedSUT, setSelectedSUT] = useState<SUT | null>(null);
-  const [selectedPhonoPreamp, setSelectedPhonoPreamp] = useState<PhonoPreamp | null>(null);
+  const [selectedTonearm, setSelectedTonearm] = useState<TonearmWithBrand | null>(null);
+  const [selectedCartridge, setSelectedCartridge] = useState<CartridgeWithBrand | null>(null);
+  const [selectedSUT, setSelectedSUT] = useState<SUTWithBrand | null>(null);
+  const [selectedPhonoPreamp, setSelectedPhonoPreamp] = useState<PhonoPreampWithBrand | null>(null);
   const [headshellWeight, setHeadshellWeight] = useState<number>(5);
 
   // UI state
@@ -41,13 +41,13 @@ export default function MatcherPage() {
   const fetchAllComponents = async () => {
     try {
       setLoading(true);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
       const [tonearmsRes, cartridgesRes, sutsRes, phonoRes] = await Promise.all([
-        fetch(`${apiUrl}/tonearms`),
-        fetch(`${apiUrl}/cartridges`),
-        fetch(`${apiUrl}/suts`),
-        fetch(`${apiUrl}/phono-preamps`),
+        fetch(`${apiUrl}/api/tonearms`),
+        fetch(`${apiUrl}/api/cartridges`),
+        fetch(`${apiUrl}/api/suts`),
+        fetch(`${apiUrl}/api/phono-preamps`),
       ]);
 
       if (!tonearmsRes.ok || !cartridgesRes.ok || !sutsRes.ok || !phonoRes.ok) {
@@ -157,7 +157,7 @@ export default function MatcherPage() {
                 type="tonearm"
                 components={tonearms}
                 selectedComponent={selectedTonearm}
-                onSelect={setSelectedTonearm}
+                onSelect={(c) => setSelectedTonearm(c as TonearmWithBrand | null)}
                 placeholder="Select a tonearm..."
               />
 
@@ -195,7 +195,7 @@ export default function MatcherPage() {
                 type="cartridge"
                 components={cartridges}
                 selectedComponent={selectedCartridge}
-                onSelect={setSelectedCartridge}
+                onSelect={(c) => setSelectedCartridge(c as CartridgeWithBrand | null)}
                 placeholder="Select a cartridge..."
               />
             </div>
@@ -214,7 +214,7 @@ export default function MatcherPage() {
                 type="sut"
                 components={suts}
                 selectedComponent={selectedSUT}
-                onSelect={setSelectedSUT}
+                onSelect={(c) => setSelectedSUT(c as SUTWithBrand | null)}
                 placeholder={
                   isSUTEnabled
                     ? 'Select a SUT (optional)...'
@@ -233,7 +233,7 @@ export default function MatcherPage() {
                 type="phonopreamp"
                 components={phonoPreamps}
                 selectedComponent={selectedPhonoPreamp}
-                onSelect={setSelectedPhonoPreamp}
+                onSelect={(c) => setSelectedPhonoPreamp(c as PhonoPreampWithBrand | null)}
                 placeholder="Select a phono preamp (optional)..."
               />
             </div>

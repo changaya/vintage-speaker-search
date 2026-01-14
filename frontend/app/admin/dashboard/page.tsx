@@ -32,12 +32,12 @@ export default function AdminDashboard() {
     const fetchStats = async () => {
       try {
         const [brands, turntables, tonearms, cartridges, suts, phonoPreamps] = await Promise.all([
-          api.get('/brands'),
-          api.get('/turntables'),
-          api.get('/tonearms'),
-          api.get('/cartridges'),
-          api.get('/suts'),
-          api.get('/phono-preamps'),
+          api.get('/api/brands'),
+          api.get('/api/turntables'),
+          api.get('/api/tonearms'),
+          api.get('/api/cartridges'),
+          api.get('/api/suts'),
+          api.get('/api/phono-preamps'),
         ]);
 
         setStats({

@@ -33,7 +33,7 @@ export default function BrandsPage() {
 
   const fetchBrands = async () => {
     try {
-      const response = await api.get<Brand[]>('/brands');
+      const response = await api.get<Brand[]>('/api/brands');
       setBrands(response.data);
     } catch (error) {
       console.error('Failed to fetch brands:', error);
@@ -63,7 +63,7 @@ export default function BrandsPage() {
     }
 
     try {
-      await api.delete(`/brands/${id}`);
+      await api.delete(`/api/brands/${id}`);
       toast.success('Brand deleted successfully');
       fetchBrands();
     } catch (error: any) {

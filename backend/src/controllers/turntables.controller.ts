@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
-import { createTurntableSchema, updateTurntableSchema } from '../schemas/turntable.schema';
+import { createTurntableSchema, updateTurntableSchema } from '@vintage-audio/shared';
 import {
   filterHiddenFields,
   filterHiddenFieldsArray,

@@ -7,15 +7,26 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-COPY package*.json ./
+# Copy shared module first for deps stage
+COPY shared /shared
+
+COPY frontend/package*.json ./
 RUN npm ci
 
 # Development stage
 FROM base AS development
 WORKDIR /app
-COPY package*.json ./
+
+# Copy shared module first
+COPY shared /shared
+
+# Copy frontend package files and install dependencies
+COPY frontend/package*.json ./
 RUN npm install
-COPY . .
+
+# Copy frontend source
+COPY frontend/ .
+
 ENV NEXT_TELEMETRY_DISABLED 1
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
@@ -23,8 +34,12 @@ CMD ["npm", "run", "dev"]
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
+
+# Copy shared module for builder stage
+COPY shared /shared
+
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY frontend/ .
 
 # Set environment variables
 ENV NEXT_TELEMETRY_DISABLED 1

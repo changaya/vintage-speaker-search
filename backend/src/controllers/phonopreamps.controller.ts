@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
-import { createPhonoPreampSchema, updatePhonoPreampSchema } from '../schemas/phonopreamp.schema';
+import { createPhonoPreampSchema, updatePhonoPreampSchema } from '@vintage-audio/shared';
 
 /**
  * Get all phono preamps

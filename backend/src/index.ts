@@ -19,6 +19,7 @@ import sutsRoutes from './routes/suts.routes';
 import phonoPreampsRoutes from './routes/phonopreamps.routes';
 import uploadRoutes from './routes/upload.routes';
 import matcherRoutes from './routes/matcher.routes';
+import statsRoutes from './routes/stats.routes';
 
 // Load environment variables
 dotenv.config();
@@ -66,6 +67,7 @@ app.use('/api/suts', sutsRoutes);
 app.use('/api/phono-preamps', phonoPreampsRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/matcher', matcherRoutes);
+app.use('/api/stats', statsRoutes);
 
 // API root
 app.get('/api', (req: Request, res: Response) => {
@@ -83,6 +85,7 @@ app.get('/api', (req: Request, res: Response) => {
       phonoPreamps: '/api/phono-preamps',
       upload: '/api/upload',
       matcher: '/api/matcher',
+      stats: '/api/stats',
     }
   });
 });

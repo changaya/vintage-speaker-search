@@ -4,7 +4,7 @@
  */
 
 import api from './api';
-import type { MatcherRequest, MatcherResponse } from '@/types/matcher';
+import type { MatcherRequest, MatcherResponse } from '@vintage-audio/shared';
 
 /**
  * Calculate component matching
@@ -13,7 +13,7 @@ import type { MatcherRequest, MatcherResponse } from '@/types/matcher';
 export async function calculateMatching(
   params: MatcherRequest
 ): Promise<MatcherResponse> {
-  const response = await api.post('/matcher/calculate', params);
+  const response = await api.post('/api/matcher/calculate', params);
   return response.data;
 }
 

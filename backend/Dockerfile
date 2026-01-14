@@ -22,21 +22,30 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY prisma ./prisma/
+# Copy shared module
+COPY shared ./shared
+
+# Copy backend
+COPY backend ./backend
+
+WORKDIR /app/backend
 
 # Install dependencies
 FROM base AS dependencies
-RUN npm ci
+WORKDIR /app/backend
+COPY --from=base /app/shared ../shared
+COPY --from=base /app/backend ./
+RUN npm install
 
 # Generate Prisma Client
 RUN npx prisma generate
 
 # Development image
 FROM base AS development
-COPY --from=dependencies /app/node_modules ./node_modules
-COPY . .
+WORKDIR /app/backend
+COPY --from=dependencies /app/backend/node_modules ./node_modules
+COPY --from=dependencies /app/shared ../shared
+COPY backend .
 
 EXPOSE 4000
 

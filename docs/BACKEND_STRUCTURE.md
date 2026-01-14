@@ -1,6 +1,6 @@
 # Backend 구조
 
-**최종 업데이트**: 2025-12-17
+**최종 업데이트**: 2026-01-12
 **버전**: 1.0.0
 
 ---
@@ -22,7 +22,7 @@
 Vintage Audio Backend는 빈티지 오디오 컴포넌트 검색 및 매칭 시스템을 위한 RESTful API 서버입니다.
 
 - **프레임워크**: Express.js + TypeScript
-- **데이터베이스**: PostgreSQL + Prisma ORM
+- **데이터베이스**: MySQL + Prisma ORM
 - **인증**: JWT (JSON Web Token)
 - **파일 업로드**: Multer + Sharp
 
@@ -149,7 +149,7 @@ vintage-audio-backend/
 
 ```bash
 # Database
-DATABASE_URL="postgresql://vintage_user:vintage_pass@localhost:5432/vintage_audio"
+DATABASE_URL="mysql://vintage_user:vintage_pass@localhost:3306/vintage_audio"
 
 # Server
 PORT=4000
@@ -168,7 +168,7 @@ MAX_FILE_SIZE_MB=10
 
 | 변수 | 설명 | 기본값 |
 |-----|------|--------|
-| `DATABASE_URL` | PostgreSQL 연결 URL | - |
+| `DATABASE_URL` | MySQL 연결 URL | - |
 | `PORT` | 서버 포트 | 4000 |
 | `NODE_ENV` | 실행 환경 (development/production) | development |
 | `JWT_SECRET` | JWT 서명 비밀키 | - |

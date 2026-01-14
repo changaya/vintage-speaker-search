@@ -16,7 +16,7 @@ services:
     networks:
       - vintage-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "vintage_user", "-pvintage_pass"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "vintage_user", "-pvintage_pass" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,8 +25,8 @@ services:
   # Backend API
   backend:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: backend/Dockerfile
       target: development
     container_name: vintage-audio-backend
     restart: unless-stopped
@@ -39,9 +39,10 @@ services:
     ports:
       - "4000:4000"
     volumes:
-      - .:/app
-      - /app/node_modules
-      - ./uploads:/app/uploads
+      - ./:/app/backend
+      - ../shared:/app/shared
+      - /app/backend/node_modules
+      - ./uploads:/app/backend/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -52,18 +53,19 @@ services:
   # Frontend
   frontend:
     build:
-      context: ../vintage-audio-frontend
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: frontend/Dockerfile
       target: development
     container_name: vintage-audio-frontend
     restart: unless-stopped
     environment:
       NODE_ENV: development
-      NEXT_PUBLIC_API_URL: http://localhost:4000/api
+      NEXT_PUBLIC_API_URL: http://localhost:4000
     ports:
       - "3000:3000"
     volumes:
-      - ../vintage-audio-frontend:/app
+      - ../frontend:/app
+      - ../shared:/shared
       - /app/node_modules
       - /app/.next
     depends_on:
