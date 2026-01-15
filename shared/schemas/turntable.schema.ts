@@ -25,14 +25,14 @@ export const createTurntableSchema = z.object({
   weight: z.number().positive().optional(),
   imageUrl: z.string().optional()
     .transform(val => val === '' ? undefined : val)
-    .refine(val => !val || z.string().url().safeParse(val).success, 'Invalid URL'),
+    .refine(val => !val || val.startsWith('/uploads/') || z.string().url().safeParse(val).success, 'Invalid URL'),
   specSheetUrl: z.string().optional()
     .transform(val => val === '' ? undefined : val)
-    .refine(val => !val || z.string().url().safeParse(val).success, 'Invalid URL'),
+    .refine(val => !val || val.startsWith('/uploads/') || z.string().url().safeParse(val).success, 'Invalid URL'),
   dataSource: z.string().optional(),
   dataSourceUrl: z.string().optional()
     .transform(val => val === '' ? undefined : val)
-    .refine(val => !val || z.string().url().safeParse(val).success, 'Invalid URL'),
+    .refine(val => !val || val.startsWith('/uploads/') || z.string().url().safeParse(val).success, 'Invalid URL'),
   tonearmMounting: z.object({
     mountingType: z.string().min(1, 'Mounting type is required'),
     smeStandard: z.string().optional(),
