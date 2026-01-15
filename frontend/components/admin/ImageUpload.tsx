@@ -45,7 +45,7 @@ export default function ImageUpload({
       const formData = new FormData();
       formData.append('image', file);
 
-      const response = await api.post('/upload/image', formData, {
+      const response = await api.post('/api/upload/image', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -77,7 +77,7 @@ export default function ImageUpload({
     try {
       setDownloading(true);
 
-      const response = await api.post('/upload/from-url', {
+      const response = await api.post('/api/upload/from-url', {
         url: urlInput.trim(),
       });
 

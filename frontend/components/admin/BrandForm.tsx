@@ -61,11 +61,11 @@ export default function BrandForm({ brand, onSuccess, onCancel }: BrandFormProps
     try {
       if (brand?.id) {
         // Update existing brand
-        await api.put(`/brands/${brand.id}`, formData);
+        await api.put(`/api/brands/${brand.id}`, formData);
         toast.success('Brand updated successfully');
       } else {
         // Create new brand
-        await api.post('/brands', formData);
+        await api.post('/api/brands', formData);
         toast.success('Brand created successfully');
       }
       onSuccess();

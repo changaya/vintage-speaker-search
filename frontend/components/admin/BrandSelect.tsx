@@ -56,7 +56,7 @@ export default function BrandSelect({ value, onChange, required = false }: Brand
 
   const fetchBrands = async () => {
     try {
-      const response = await api.get<Brand[]>('/brands');
+      const response = await api.get<Brand[]>('/api/brands');
       setBrands(response.data);
     } catch (error) {
       console.error('Failed to fetch brands:', error);
@@ -67,7 +67,7 @@ export default function BrandSelect({ value, onChange, required = false }: Brand
   const createBrand = async (name: string) => {
     try {
       setIsLoading(true);
-      const response = await api.post<Brand>('/brands', { name });
+      const response = await api.post<Brand>('/api/brands', { name });
       const newBrand = response.data;
 
       // Add to local brands list
