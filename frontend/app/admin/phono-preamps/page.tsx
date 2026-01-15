@@ -10,6 +10,23 @@ import { api } from '@/lib/api';
 import { getImageUrl } from '@/lib/image-utils';
 import toast from 'react-hot-toast';
 
+// Helper to convert value to JSON array string for TagInput
+// Handles: JSON array string, plain string, or undefined
+const toJsonArrayString = (value: string | undefined, defaultValue: string = '[]'): string => {
+  if (!value) return defaultValue;
+  // Already a JSON array string
+  if (value.startsWith('[')) {
+    try {
+      JSON.parse(value);
+      return value;
+    } catch {
+      // Invalid JSON, treat as plain string
+    }
+  }
+  // Plain string - convert to JSON array
+  return JSON.stringify([value]);
+};
+
 interface Brand {
   id: string;
   name: string;
@@ -207,16 +224,16 @@ export default function PhonoPreampPage() {
         gainAdjustable: fullPreamp.gainAdjustable ?? false,
         gainRange: fullPreamp.gainRange || '',
         impedanceAdjust: fullPreamp.impedanceAdjust ?? false,
-        impedanceOptions: fullPreamp.impedanceOptions || '["47000"]',
+        impedanceOptions: toJsonArrayString(fullPreamp.impedanceOptions, '["47000"]'),
         capacitanceAdjust: fullPreamp.capacitanceAdjust ?? false,
         capacitanceRange: fullPreamp.capacitanceRange || '',
-        equalizationCurve: fullPreamp.equalizationCurve || '["RIAA"]',
+        equalizationCurve: toJsonArrayString(fullPreamp.equalizationCurve, '["RIAA"]'),
         freqRespLow: fullPreamp.freqRespLow || '',
         freqRespHigh: fullPreamp.freqRespHigh || '',
         thd: fullPreamp.thd || '',
         snr: fullPreamp.snr || '',
-        inputConnectors: fullPreamp.inputConnectors || '["RCA"]',
-        outputConnectors: fullPreamp.outputConnectors || '["RCA"]',
+        inputConnectors: toJsonArrayString(fullPreamp.inputConnectors, '["RCA"]'),
+        outputConnectors: toJsonArrayString(fullPreamp.outputConnectors, '["RCA"]'),
         balanced: fullPreamp.balanced ?? false,
         amplifierType: fullPreamp.amplifierType || '',
         powerSupply: fullPreamp.powerSupply || '',
