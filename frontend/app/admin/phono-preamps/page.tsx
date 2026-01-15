@@ -914,6 +914,9 @@ export default function PhonoPreampPage() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Image
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Brand
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -933,6 +936,19 @@ export default function PhonoPreampPage() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {phonoPreamps.map((preamp) => (
                     <tr key={preamp.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {preamp.imageUrl ? (
+                          <img
+                            src={preamp.imageUrl}
+                            alt={preamp.modelName}
+                            className="h-12 w-12 rounded object-cover"
+                          />
+                        ) : (
+                          <div className="h-12 w-12 rounded bg-gray-100 flex items-center justify-center">
+                            <span className="text-gray-400 text-xs">No img</span>
+                          </div>
+                        )}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {preamp.brand.name}
                       </td>
