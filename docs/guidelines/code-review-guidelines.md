@@ -352,6 +352,72 @@ import { getImageUrl } from '@/lib/image-utils';
 
 ---
 
+## 📤 Image/File Upload Review Checklist
+
+**Critical: Test the complete upload → save → retrieve flow!**
+
+### From BUG-20260115-02 (SUT Image URL Validation Bug)
+
+**What Happened:**
+- User entered external URL and clicked "Download"
+- Backend downloaded image and returned local path: `/uploads/images/xxx.jpg`
+- User clicked "Update" button
+- Schema validation failed: `z.string().url()` rejected `/uploads/...` path
+- Error: "Invalid URL"
+
+**Why Code Review Missed It:**
+1. Only reviewed image display code, not upload/save flow
+2. Didn't check what value is returned after upload
+3. Didn't verify schema validation accepts the actual data format
+4. Assumed "upload works" without testing the full flow
+
+### Upload Flow Checklist
+
+For all image/file upload features:
+
+- [ ] **Upload Return Value**: What format does backend return? (absolute URL vs relative path)
+- [ ] **Schema Validation**: Does the schema accept the returned format?
+- [ ] **Full Flow Test**: Upload → Save (form submit) → Retrieve (edit again)
+- [ ] **Multiple Upload Methods**: Test both file upload AND URL download
+
+### Data Flow Verification
+
+```
+[User Input] → [Upload API] → [Return Value] → [Form State] → [Schema] → [Save API]
+                                    ↑                              ↑
+                            Check this value              Check validation
+```
+
+### Common Mismatch Patterns
+
+| Upload Returns | Schema Expects | Result |
+|----------------|----------------|--------|
+| `/uploads/xxx.jpg` | `z.string().url()` | ❌ FAIL |
+| `/uploads/xxx.jpg` | `z.string()` | ✅ PASS |
+| `http://localhost:4000/uploads/xxx.jpg` | `z.string().url()` | ✅ PASS |
+
+### Example Review Comment
+
+```markdown
+**P0 BLOCKER: Schema Rejects Upload Return Value**
+
+The upload API returns `/uploads/images/xxx.jpg` but the schema uses
+`z.string().url()` validation which only accepts full URLs.
+
+**Data Flow**:
+1. Upload returns: `/uploads/images/xxx.jpg`
+2. Form state: `imageUrl = "/uploads/images/xxx.jpg"`
+3. Schema validation: `z.string().url()` → FAIL
+
+**Required Fix**:
+Update schema to accept local paths:
+```typescript
+.refine(val => !val || val.startsWith('/uploads/') || z.string().url().safeParse(val).success, 'Invalid URL')
+```
+```
+
+---
+
 ## 🔄 Common Mistakes to Catch
 
 Based on previous bugs in this project:

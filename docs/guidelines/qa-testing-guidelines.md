@@ -2,7 +2,7 @@
 
 **For**: QA Tester (qa-tester subagent)
 **Purpose**: Comprehensive testing guidelines to catch bugs before they reach production
-**Last Updated**: 2026-01-11
+**Last Updated**: 2026-01-15
 
 ---
 
@@ -503,6 +503,133 @@ Always test image features in actual browser with Network tab open.
 
 ---
 
+## 📤 Image/File Upload Testing
+
+**Critical: Test the complete upload → save → retrieve flow!**
+
+### From BUG-20260115-02 (SUT Image URL Validation Bug)
+
+**What Happened:**
+- User entered external URL and clicked "Download"
+- Backend downloaded image and returned local path: `/uploads/images/xxx.jpg`
+- User clicked "Update" button
+- Schema validation failed: `z.string().url()` rejected `/uploads/...` path
+- Error: "Invalid URL"
+
+**Why QA Missed It:**
+1. Only tested image display, not full upload → save flow
+2. Didn't test "Download from URL" feature end-to-end
+3. Didn't verify what value the upload API returns
+4. Assumed "upload works" means "save works"
+
+### Upload Flow Test Checklist
+
+**P0 BLOCKER - For all image/file upload features:**
+
+- [ ] **Upload Test**: File uploads successfully
+- [ ] **Download Test**: URL download works and saves locally
+- [ ] **Return Value Check**: What does the upload API return? (full URL vs relative path)
+- [ ] **Save Test**: Form submission with uploaded image succeeds
+- [ ] **Retrieve Test**: Edit the item again, image URL loads correctly
+- [ ] **Full Flow**: Upload → Save → Close → Edit → Verify image still there
+
+### Data Flow Verification
+
+```
+[User Action] → [Upload API] → [Return Value] → [Form State] → [Schema] → [Save API]
+                                    ↓                              ↓
+                            Verify this value              Test validation
+```
+
+**Key Questions:**
+1. What format does the upload API return? (`/uploads/xxx.jpg` or `http://...`)
+2. Does the schema accept that format?
+3. Does the form save successfully?
+
+### How to Test
+
+**Step 1: Test File Upload**
+```
+1. Open create/edit form
+2. Select image file from local disk
+3. Verify preview shows correctly
+4. Submit form
+5. ✅ Should save without validation errors
+```
+
+**Step 2: Test URL Download**
+```
+1. Open create/edit form
+2. Enter external image URL
+3. Click "Download" button
+4. Verify preview shows correctly
+5. Submit form
+6. ✅ Should save without validation errors
+```
+
+**Step 3: Test Edit Flow**
+```
+1. Create item with image
+2. Close form
+3. Re-open item for editing
+4. Verify image still shows
+5. Click Save without changes
+6. ✅ Should save without errors (no validation change)
+```
+
+### Test Report Template for Upload Features
+
+```markdown
+## Image Upload Test
+
+**Test Environment:**
+- Frontend: localhost:3000
+- Backend: localhost:4000
+
+**Test Results:**
+
+| Test Case | Action | Expected | Actual | Result |
+|-----------|--------|----------|--------|--------|
+| File Upload | Select local file → Save | Success | Success | PASS |
+| URL Download | Enter URL → Download → Save | Success | "Invalid URL" error | FAIL |
+| Edit Flow | Edit existing item → Save | Success | Success | PASS |
+
+**Upload API Return Value:**
+- File upload: `/uploads/images/xxx.jpg` (relative path)
+- URL download: `/uploads/images/xxx.jpg` (relative path)
+
+**Schema Validation:**
+- Accepts: Full URLs (http://...)
+- Rejects: Relative paths (/uploads/...) ← BUG!
+```
+
+### Red Flags
+
+🚩 **Immediate FAIL if:**
+- Form submission fails with "Invalid URL" after successful upload
+- Different behavior between file upload and URL download
+- Uploaded image not visible when editing the item
+- Schema expects `z.string().url()` but API returns relative path
+
+### Common Mismatch Patterns
+
+| Upload Returns | Schema Expects | Save Result |
+|----------------|----------------|-------------|
+| `/uploads/xxx.jpg` | `z.string().url()` | ❌ FAIL |
+| `/uploads/xxx.jpg` | `z.string()` | ✅ PASS |
+| `http://localhost:4000/uploads/xxx.jpg` | `z.string().url()` | ✅ PASS |
+
+### Key Lesson
+
+```
+"Image uploads successfully" ≠ "Form saves successfully"
+
+Upload and save are separate operations with separate validations.
+Always test the complete flow: Upload → Save → Edit → Verify
+```
+
+---
+
 ## 🚫 Common Testing Mistakes
 
 ### From BUG-20260111-01 (LINE Yahoo Price Bug)
@@ -644,6 +771,8 @@ Before marking feature as "READY":
 - [ ] UI error states tested (null, loading, error)
 - [ ] Route order verified (if applicable)
 - [ ] Silent failures reviewed and acceptable
+- [ ] Image URLs tested in browser (if applicable)
+- [ ] Upload flow tested end-to-end: Upload → Save → Edit → Verify (if applicable)
 - [ ] Test report documented
 
 **Remember**: "READY FOR MANUAL TESTING" means all automated tests passed. Don't skip tests to speed things up!
