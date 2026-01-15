@@ -7,6 +7,7 @@ import ImageUpload from '@/components/admin/ImageUpload';
 import BrandSelect from '@/components/admin/BrandSelect';
 import { TagInput } from '@/components/admin/forms';
 import { api } from '@/lib/api';
+import { getImageUrl } from '@/lib/image-utils';
 import toast from 'react-hot-toast';
 
 interface Brand {
@@ -939,7 +940,7 @@ export default function PhonoPreampPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         {preamp.imageUrl ? (
                           <img
-                            src={preamp.imageUrl}
+                            src={getImageUrl(preamp.imageUrl)!}
                             alt={preamp.modelName}
                             className="h-12 w-12 rounded object-cover"
                           />

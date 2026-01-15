@@ -5,6 +5,7 @@ import AuthGuard from '@/components/admin/AuthGuard';
 import AdminNav from '@/components/admin/AdminNav';
 import { SUTForm } from './components/SUTForm';
 import { api } from '@/lib/api';
+import { getImageUrl } from '@/lib/image-utils';
 import { FIELD_VISIBILITY } from '@/lib/field-visibility';
 import toast from 'react-hot-toast';
 
@@ -183,7 +184,7 @@ export default function SUTsPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         {sut.imageUrl ? (
                           <img
-                            src={sut.imageUrl}
+                            src={getImageUrl(sut.imageUrl)!}
                             alt={sut.modelName}
                             className="h-12 w-12 rounded object-cover"
                           />

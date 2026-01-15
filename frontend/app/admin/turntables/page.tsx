@@ -6,6 +6,7 @@ import AdminNav from '@/components/admin/AdminNav';
 import ImageUpload from '@/components/admin/ImageUpload';
 import BrandSelect from '@/components/admin/BrandSelect';
 import { api } from '@/lib/api';
+import { getImageUrl } from '@/lib/image-utils';
 import { FIELD_VISIBILITY } from '@/lib/field-visibility';
 import toast from 'react-hot-toast';
 
@@ -395,7 +396,7 @@ export default function TurntablesPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         {turntable.imageUrl ? (
                           <img
-                            src={turntable.imageUrl}
+                            src={getImageUrl(turntable.imageUrl)!}
                             alt={turntable.modelName}
                             className="h-12 w-12 rounded object-cover"
                           />

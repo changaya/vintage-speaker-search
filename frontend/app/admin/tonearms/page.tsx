@@ -5,6 +5,7 @@ import AuthGuard from '@/components/admin/AuthGuard';
 import AdminNav from '@/components/admin/AdminNav';
 import { TonearmForm } from './components/TonearmForm';
 import { api } from '@/lib/api';
+import { getImageUrl } from '@/lib/image-utils';
 import { FIELD_VISIBILITY } from '@/lib/field-visibility';
 import toast from 'react-hot-toast';
 
@@ -180,7 +181,7 @@ export default function TonearmsPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         {tonearm.imageUrl ? (
                           <img
-                            src={tonearm.imageUrl}
+                            src={getImageUrl(tonearm.imageUrl)!}
                             alt={tonearm.modelName}
                             className="h-12 w-12 rounded object-cover"
                           />

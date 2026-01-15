@@ -5,6 +5,7 @@ import AuthGuard from '@/components/admin/AuthGuard';
 import AdminNav from '@/components/admin/AdminNav';
 import { CartridgeForm } from './components/CartridgeForm';
 import { api } from '@/lib/api';
+import { getImageUrl } from '@/lib/image-utils';
 import { FIELD_VISIBILITY } from '@/lib/field-visibility';
 import toast from 'react-hot-toast';
 
@@ -192,7 +193,7 @@ export default function CartridgesPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         {cartridge.imageUrl ? (
                           <img
-                            src={cartridge.imageUrl}
+                            src={getImageUrl(cartridge.imageUrl)!}
                             alt={cartridge.modelName}
                             className="h-12 w-12 rounded object-cover"
                           />
