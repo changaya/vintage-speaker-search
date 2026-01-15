@@ -19,12 +19,13 @@ interface PhonoPreamp {
   id: string;
   brandId: string;
   modelName: string;
-  preampType: string;
-  tubeOrSolid: string;
-  mmGainDb?: number;
-  mcGainDb?: number;
+  supportsMM: boolean;
+  supportsMC: boolean;
+  mmGain?: number;
+  mcGain?: number;
+  amplifierType?: string;
   imageUrl?: string;
-  brand: {
+  brand?: {
     id: string;
     name: string;
   };
@@ -951,18 +952,18 @@ export default function PhonoPreampPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {preamp.brand.name}
+                        {preamp.brand?.name || brands.find(b => b.id === preamp.brandId)?.name || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {preamp.modelName}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {preamp.preampType}
+                        {[preamp.supportsMM && 'MM', preamp.supportsMC && 'MC'].filter(Boolean).join('/')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {preamp.tubeOrSolid}
-                        {preamp.mmGainDb && ` / MM:${preamp.mmGainDb}dB`}
-                        {preamp.mcGainDb && ` / MC:${preamp.mcGainDb}dB`}
+                        {preamp.amplifierType || '-'}
+                        {preamp.mmGain && ` / MM:${preamp.mmGain}dB`}
+                        {preamp.mcGain && ` / MC:${preamp.mcGain}dB`}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                         <button
