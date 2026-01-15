@@ -414,6 +414,95 @@ describe('Google Finance Integration', () => {
 
 ---
 
+## 🖼️ Image/File URL Testing
+
+**Critical for frontend/backend separated architecture!**
+
+### From BUG-20260115-01 (Thumbnail URL Bug)
+
+**What Happened:**
+- Image URL stored as `/uploads/images/xxx.jpg` (relative path)
+- Frontend used `<img src={imageUrl}>` directly
+- Browser requested `localhost:3000/uploads/...` → 404
+- Image actually served from `localhost:4000/uploads/...`
+
+**Why QA Missed It:**
+1. Only did static code analysis and TypeScript build check
+2. Didn't test in actual browser
+3. Didn't check Network tab for image requests
+4. Assumed "build passes = works correctly"
+
+### Image/File URL Test Checklist
+
+**P0 BLOCKER - For all image/file related changes:**
+
+- [ ] **Browser Test**: Actually open the page in browser
+- [ ] **Network Tab**: Check image request URLs (F12 → Network → Img)
+- [ ] **Request Target**: Verify requests go to correct server (3000 vs 4000)
+- [ ] **404 Check**: No broken images in console or Network tab
+- [ ] **Placeholder Test**: Test with items that have no image
+
+### How to Test
+
+**Step 1: Open Browser DevTools**
+```
+F12 → Network tab → Filter: Img
+```
+
+**Step 2: Load the Page**
+- Navigate to the page with images
+- Watch Network tab for image requests
+
+**Step 3: Verify Request URLs**
+```
+✅ CORRECT: http://localhost:4000/uploads/images/xxx.jpg → 200
+❌ WRONG:   http://localhost:3000/uploads/images/xxx.jpg → 404
+```
+
+**Step 4: Check Console**
+- No "Failed to load resource: 404" errors
+- No broken image icons in UI
+
+### Test Report Template for Image Features
+
+```markdown
+## Image Loading Test
+
+**Test Environment:**
+- Frontend: localhost:3000
+- Backend: localhost:4000
+
+**Test Results:**
+
+| Page | Image Request URL | Status | Result |
+|------|-------------------|--------|--------|
+| /admin/cartridges | localhost:4000/uploads/... | 200 | PASS |
+| /admin/turntables | localhost:4000/uploads/... | 200 | PASS |
+
+**Network Tab Screenshot:** [attach if needed]
+
+**Console Errors:** None / [list errors]
+```
+
+### Red Flags
+
+🚩 **Immediate FAIL if:**
+- Image requests go to wrong server (3000 instead of 4000)
+- 404 errors in Network tab for image files
+- Broken image icons visible in UI
+- Console shows "Failed to load resource" for images
+
+### Key Lesson
+
+```
+"TypeScript build passes" ≠ "Images load correctly"
+
+Static analysis cannot catch runtime URL resolution issues.
+Always test image features in actual browser with Network tab open.
+```
+
+---
+
 ## 🚫 Common Testing Mistakes
 
 ### From BUG-20260111-01 (LINE Yahoo Price Bug)

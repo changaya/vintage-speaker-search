@@ -284,6 +284,74 @@ The regex `priceText.replace(/,/g, '')` only removes commas.
 
 ---
 
+## 🖼️ Image/File URL Review Checklist
+
+**Critical for frontend/backend separated architecture!**
+
+### From BUG-20260115-01 (Thumbnail URL Bug)
+
+**What Happened:**
+- Image URL stored as relative path: `/uploads/images/xxx.jpg`
+- Frontend (localhost:3000) used `<img src={imageUrl}>` directly
+- Browser requested `localhost:3000/uploads/...` → 404
+- Actual image served from backend (localhost:4000)
+
+**Why Code Review Missed It:**
+1. Only checked code pattern consistency
+2. Didn't consider frontend/backend server separation
+3. Assumed existing pattern (Brands logoUrl) worked correctly
+4. No runtime environment testing
+
+### URL Context Checklist
+
+For all image/file URL changes:
+
+- [ ] **Server Context**: Which server serves the file? (FE: 3000, BE: 4000)
+- [ ] **URL Type**: Relative (`/uploads/...`) or absolute (`http://...`)?
+- [ ] **Request Target**: Where will browser send the request?
+- [ ] **Helper Function**: Does `getImageUrl()` or similar exist? Should it be used?
+
+### Pattern Check
+
+**❌ WRONG (when files served from backend):**
+```tsx
+<img src={item.imageUrl} />  // /uploads/xxx.jpg → localhost:3000/uploads/xxx.jpg → 404
+```
+
+**✅ CORRECT:**
+```tsx
+import { getImageUrl } from '@/lib/image-utils';
+
+<img src={getImageUrl(item.imageUrl)} />  // → localhost:4000/uploads/xxx.jpg → 200
+```
+
+### Review Questions for File URLs
+
+1. **Where is the file stored?** (Backend uploads folder, CDN, external URL)
+2. **How is the URL saved in DB?** (Relative or absolute)
+3. **Which server serves the file?** (Frontend or backend)
+4. **Does the URL need transformation?** (Add API_URL prefix?)
+
+### Example Review Comment
+
+```markdown
+**P0 BLOCKER: Image URL Server Mismatch**
+
+The image URL `/uploads/images/xxx.jpg` is used directly in `<img src>`.
+
+**Issue**: Images are served from backend (localhost:4000), but this relative
+path will request from frontend (localhost:3000) → 404 error.
+
+**Required Fix**:
+Use `getImageUrl()` helper to prepend backend URL:
+```tsx
+import { getImageUrl } from '@/lib/image-utils';
+<img src={getImageUrl(item.imageUrl)} />
+```
+```
+
+---
+
 ## 🔄 Common Mistakes to Catch
 
 Based on previous bugs in this project:
