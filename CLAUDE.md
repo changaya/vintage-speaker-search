@@ -132,6 +132,71 @@ kill -9 <PID>
 
 ---
 
+## 3.5. Git Worktree 기반 멀티브랜치 개발
+
+여러 브랜치를 동시에 개발/테스트할 때 Git Worktree를 사용하여 환경을 격리합니다.
+
+### 왜 Worktree인가?
+
+| 문제 | 단일 디렉토리 방식 | Worktree 방식 |
+|------|-------------------|---------------|
+| node_modules 충돌 | ❌ 브랜치 전환 시 재설치 필요 | ✅ 브랜치별 독립 |
+| Prisma Client 충돌 | ❌ generate 시 덮어씀 | ✅ 브랜치별 독립 |
+| Docker 포트 충돌 | ❌ 동시 실행 불가 | ✅ 브랜치별 포트 할당 |
+| 브랜치 전환 비용 | 높음 (rebuild) | 없음 (cd만 하면 됨) |
+
+### Worktree 사용법
+
+```bash
+# 새 브랜치용 worktree 생성
+./scripts/worktree-create.sh feature/new-api
+
+# 생성된 디렉토리 구조
+vintage-audio/                    # main 브랜치 (FE:3000, BE:4000)
+vintage-audio-feature-new-api/    # feature/new-api (FE:300X, BE:400X)
+
+# worktree 목록 확인
+./scripts/worktree-list.sh
+
+# worktree 삭제
+./scripts/worktree-remove.sh feature/new-api
+```
+
+### Worktree 환경에서 개발
+
+```bash
+# 1. worktree로 이동
+cd /Users/alex/Projects/vintage-audio-feature-new-api
+
+# 2. 의존성 설치 (최초 1회)
+cd backend && npm install
+cd ../frontend && npm install
+
+# 3. Docker 시작 (자동으로 다른 포트 사용)
+cd backend && docker compose up -d
+
+# 4. 접속 URL 확인
+cat backend/.env.branch
+# → FRONTEND_PORT, BACKEND_PORT 확인
+```
+
+### 포트 할당 규칙
+
+| 브랜치 | Frontend | Backend | Database |
+|--------|----------|---------|----------|
+| main (기본) | 3000 | 4000 | 3306 |
+| worktree 1 | 3001-3009 | 4001-4009 | 3307-3315 |
+
+> 포트는 브랜치 이름의 해시값으로 자동 계산됩니다.
+
+### 주의사항
+
+- **디스크 용량**: worktree당 약 500MB (node_modules 포함)
+- **Docker 볼륨**: 브랜치별 독립 DB 볼륨 생성됨
+- **정리**: 작업 완료 후 `worktree-remove.sh`로 정리 권장
+
+---
+
 ## 4. Claude Session Modes & Workflow
 
 ### 기본 워크플로우

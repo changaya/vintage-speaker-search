@@ -47,9 +47,13 @@ COPY --from=dependencies /app/backend/node_modules ./node_modules
 COPY --from=dependencies /app/shared ../shared
 COPY backend .
 
+# Copy and set entrypoint script
+COPY backend/docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 EXPOSE 4000
 
-# For development
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["npm", "run", "dev"]
 
 # Production build
