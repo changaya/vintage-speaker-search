@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
+const LOCAL_DEV_SECRET = process.env.LOCAL_DEV_SECRET;
+const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // Extend Express Request type to include user
 declare global {
@@ -23,13 +25,35 @@ export interface JWTPayload {
 }
 
 /**
+ * Check if request has valid dev secret for local bypass
+ */
+const checkDevSecret = (req: Request): boolean => {
+  if (NODE_ENV !== 'development' || !LOCAL_DEV_SECRET) {
+    return false;
+  }
+  const devSecret = req.headers['x-dev-secret'];
+  return devSecret === LOCAL_DEV_SECRET;
+};
+
+/**
  * Middleware to verify JWT token and attach user to request
+ * In development mode, allows bypass with X-Dev-Secret header
  */
 export const authenticateToken = (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
+  // Check for dev secret bypass (development only)
+  if (checkDevSecret(req)) {
+    req.user = {
+      id: 'dev-user',
+      username: 'developer',
+      role: 'admin'
+    };
+    return next();
+  }
+
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
