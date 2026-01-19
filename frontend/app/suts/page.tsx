@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 interface Brand {
   id: string;
@@ -41,8 +42,7 @@ export default function SUTsPage() {
     if (!imageUrl) return null;
     if (imageUrl.startsWith('http')) return imageUrl;
     // Relative paths need to be prefixed with backend URL
-    const fullUrl = `http://localhost:4000${imageUrl}`;
-    console.log('Image URL:', imageUrl, '→', fullUrl);
+    const fullUrl = 'http://localhost:4000' + imageUrl;
     return fullUrl;
   };
 
@@ -54,10 +54,10 @@ export default function SUTsPage() {
     try {
       setLoading(true);
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-      const response = await fetch(`${apiUrl}/api/suts`);
+      const response = await fetch(apiUrl + '/api/suts');
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch SUTs: ${response.statusText}`);
+        throw new Error('Failed to fetch SUTs: ' + response.statusText);
       }
 
       const data = await response.json();
@@ -186,16 +186,17 @@ export default function SUTsPage() {
         {/* SUTs Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredSUTs.map((sut) => (
-            <div
+            <Link
               key={sut.id}
-              className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden border"
+              href={'/suts/' + sut.id}
+              className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden border group"
             >
               {/* Image Placeholder */}
               <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                 {getImageUrl(sut.imageUrl) ? (
                   <img
                     src={getImageUrl(sut.imageUrl)!}
-                    alt={`${sut.brand.name} ${sut.modelName}`}
+                    alt={sut.brand.name + ' ' + sut.modelName}
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       console.error('Image load error:', getImageUrl(sut.imageUrl));
@@ -211,7 +212,7 @@ export default function SUTsPage() {
               <div className="p-5">
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
                       {sut.brand.name} {sut.modelName}
                     </h3>
                     <p className="text-sm text-gray-500">{sut.brand.country}</p>
@@ -227,7 +228,7 @@ export default function SUTsPage() {
                 <div className="space-y-1 text-sm text-gray-600 mb-4">
                   <div className="flex justify-between">
                     <span className="text-gray-500">Gain:</span>
-                    <span>{sut.gainDb}dB{sut.gainRatio ? ` (${sut.gainRatio})` : ''}</span>
+                    <span>{sut.gainDb}dB{sut.gainRatio ? ' (' + sut.gainRatio + ')' : ''}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">Input Impedance:</span>
@@ -259,14 +260,16 @@ export default function SUTsPage() {
                     <p className="text-xs text-gray-500">
                       Source:{' '}
                       {sut.dataSourceUrl ? (
-                        <a
-                          href={sut.dataSourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary-600 hover:underline"
+                        <span
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.open(sut.dataSourceUrl!, '_blank');
+                          }}
+                          className="text-primary-600 hover:underline cursor-pointer"
                         >
                           {sut.dataSource}
-                        </a>
+                        </span>
                       ) : (
                         sut.dataSource
                       )}
@@ -274,7 +277,7 @@ export default function SUTsPage() {
                   </div>
                 )}
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 

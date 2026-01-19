@@ -654,3 +654,23 @@ model Admin {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// ============================================================================
+// COMPONENT IMAGES (Multi-Image Support)
+// ============================================================================
+
+// ComponentImage - Stores multiple images for each component
+model ComponentImage {
+  id            Int       @id @default(autoincrement())
+  url           String    // /uploads/images/xxx.jpg
+  isPrimary     Boolean   @default(false)
+  sortOrder     Int       @default(0)
+  componentType String    // 'turntable', 'tonearm', 'cartridge', 'sut', 'phonopreamp'
+  componentId   String    // UUID of the component
+  deletedAt     DateTime? // Soft delete timestamp
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([componentType, componentId])
+  @@index([deletedAt])
+}

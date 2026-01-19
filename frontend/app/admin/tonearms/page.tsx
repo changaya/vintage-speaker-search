@@ -102,17 +102,21 @@ export default function TonearmsPage() {
     }
   };
 
-  const handleFormSubmit = async (data: any) => {
+  const handleFormSubmit = async (data: any): Promise<string | undefined> => {
     try {
+      let componentId: string | undefined;
       if (editingData?.id) {
         await api.put(`/api/tonearms/${editingData.id}`, data);
+        componentId = editingData.id;
         toast.success('Tonearm updated successfully');
       } else {
-        await api.post('/api/tonearms', data);
+        const response = await api.post('/api/tonearms', data);
+        componentId = response.data.id;
         toast.success('Tonearm created successfully');
       }
       setShowForm(false);
       fetchTonearms();
+      return componentId;
     } catch (error: any) {
       console.error('Submit error:', error);
       const message = error.response?.data?.message || 'Failed to save tonearm';

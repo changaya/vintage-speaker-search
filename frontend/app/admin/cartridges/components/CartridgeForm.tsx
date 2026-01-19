@@ -1,18 +1,21 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createCartridgeSchema, updateCartridgeSchema } from '@vintage-audio/shared';
 import { z } from 'zod';
 import { FormInput, FormSelect, Accordion, AccordionItem } from '@/components/admin/forms';
 import BrandSelect from '@/components/admin/BrandSelect';
-import ImageUpload from '@/components/admin/ImageUpload';
+import MultiImageUpload, { ComponentImage } from '@/components/admin/MultiImageUpload';
+import { api } from '@/lib/api';
+import toast from 'react-hot-toast';
 
 type CartridgeFormData = z.infer<typeof createCartridgeSchema>;
 
 interface CartridgeFormProps {
   initialData?: Partial<CartridgeFormData> & { id?: string };
-  onSubmit: (data: CartridgeFormData) => Promise<void>;
+  onSubmit: (data: CartridgeFormData) => Promise<string | undefined>;
   onCancel: () => void;
   isEditing?: boolean;
 }
@@ -30,6 +33,8 @@ interface CartridgeFormProps {
  * 4. Documentation
  */
 export const CartridgeForm = ({ initialData, onSubmit, onCancel, isEditing = false }: CartridgeFormProps) => {
+  const [images, setImages] = useState<ComponentImage[]>([]);
+
   const {
     register,
     handleSubmit,
@@ -56,11 +61,70 @@ export const CartridgeForm = ({ initialData, onSubmit, onCancel, isEditing = fal
   });
 
   const brandId = watch('brandId');
-  const imageUrl = watch('imageUrl');
+
+  // Fetch component images when editing
+  useEffect(() => {
+    const fetchComponentImages = async () => {
+      if (isEditing && initialData?.id) {
+        try {
+          const response = await api.get(`/api/component-images/cartridge/${initialData.id}`);
+          const fetchedImages: ComponentImage[] = (response.data.images || []).map((img: any) => ({
+            id: img.id,
+            url: img.url,
+            isPrimary: img.isPrimary,
+            sortOrder: img.sortOrder,
+            isNew: false,
+          }));
+          setImages(fetchedImages);
+        } catch (error) {
+          console.error('Failed to fetch component images:', error);
+          setImages([]);
+        }
+      }
+    };
+    fetchComponentImages();
+  }, [isEditing, initialData?.id]);
+
+  const saveComponentImages = async (componentId: string) => {
+    try {
+      const imagesPayload = images.map((img, index) => ({
+        id: img.id && img.id > 0 ? img.id : undefined,
+        url: img.url,
+        isPrimary: img.isPrimary,
+        sortOrder: index,
+      }));
+
+      await api.put(`/api/component-images/cartridge/${componentId}`, {
+        images: imagesPayload,
+      });
+    } catch (error) {
+      console.error('Failed to save component images:', error);
+      toast.error('Failed to save images');
+    }
+  };
 
   const handleFormSubmit = async (data: CartridgeFormData) => {
-    await onSubmit(data);
+    // Get primary image URL for backward compatibility
+    const primaryImage = images.find(img => img.isPrimary);
+    const primaryImageUrl = primaryImage?.url || images[0]?.url || data.imageUrl;
+
+    const submitData = {
+      ...data,
+      imageUrl: primaryImageUrl,
+    };
+
+    // onSubmit returns the component ID (for new components)
+    const returnedId = await onSubmit(submitData);
+
+    // Save component images after main form submission
+    if (images.length > 0) {
+      const componentId = returnedId || initialData?.id;
+      if (componentId) {
+        await saveComponentImages(componentId);
+      }
+    }
   };
+
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
@@ -129,7 +193,7 @@ export const CartridgeForm = ({ initialData, onSubmit, onCancel, isEditing = fal
           />
 
           <FormInput
-            label="Output Impedance (Ω)"
+            label="Output Impedance (Ohm)"
             type="number"
             step="0.1"
             {...register('outputImpedance', { valueAsNumber: true })}
@@ -148,7 +212,7 @@ export const CartridgeForm = ({ initialData, onSubmit, onCancel, isEditing = fal
         {/* Section 3: Mechanical Properties */}
         <AccordionItem id="mechanical" title="Mechanical Properties">
           <FormInput
-            label="Compliance (μm/mN)"
+            label="Compliance (um/mN)"
             type="number"
             step="0.1"
             {...register('compliance', { valueAsNumber: true })}
@@ -176,11 +240,12 @@ export const CartridgeForm = ({ initialData, onSubmit, onCancel, isEditing = fal
         {/* Section 4: Documentation */}
         <AccordionItem id="documentation" title="Documentation">
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Cartridge Image</label>
-            <ImageUpload
-              currentImageUrl={imageUrl}
-              onImageUploaded={(url) => setValue('imageUrl', url)}
-              label="Cartridge Image"
+            <label className="block text-sm font-medium text-gray-700 mb-2">Cartridge Images</label>
+            <MultiImageUpload
+              componentType="cartridge"
+              componentId={initialData?.id ? Number(initialData.id) : null}
+              images={images}
+              onImagesChange={setImages}
             />
             {errors.imageUrl && (
               <p className="text-sm text-red-600 mt-1">{errors.imageUrl.message}</p>

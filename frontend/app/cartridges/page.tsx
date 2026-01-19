@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 interface Brand {
   id: string;
@@ -46,7 +47,7 @@ export default function CartridgesPage() {
   const getImageUrl = (imageUrl: string | null) => {
     if (!imageUrl) return null;
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:4000';
-    return imageUrl.startsWith('http') ? imageUrl : `${apiBaseUrl}${imageUrl}`;
+    return imageUrl.startsWith('http') ? imageUrl : apiBaseUrl + imageUrl;
   };
 
   useEffect(() => {
@@ -57,10 +58,10 @@ export default function CartridgesPage() {
     try {
       setLoading(true);
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-      const response = await fetch(`${apiUrl}/api/cartridges`);
+      const response = await fetch(apiUrl + '/api/cartridges');
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch cartridges: ${response.statusText}`);
+        throw new Error('Failed to fetch cartridges: ' + response.statusText);
       }
 
       const data = await response.json();
@@ -189,21 +190,21 @@ export default function CartridgesPage() {
           <div className="flex gap-2">
             <button
               onClick={() => setViewMode('grid')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                viewMode === 'grid'
+              className={'px-4 py-2 rounded-md text-sm font-medium transition-colors ' +
+                (viewMode === 'grid'
                   ? 'bg-primary-600 text-white'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-              }`}
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50')
+              }
             >
               Grid View
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                viewMode === 'table'
+              className={'px-4 py-2 rounded-md text-sm font-medium transition-colors ' +
+                (viewMode === 'table'
                   ? 'bg-primary-600 text-white'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-              }`}
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50')
+              }
             >
               Table View
             </button>
@@ -217,50 +218,29 @@ export default function CartridgesPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Image
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Type
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Output
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Impedance
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Compliance
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tracking Force
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Stylus Type
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Cantilever
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Load Impedance
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Output Type
-                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Output</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Impedance</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Compliance</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tracking Force</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stylus</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredCartridges.map((cartridge) => (
-                    <tr key={cartridge.id} className="hover:bg-gray-50">
+                    <tr
+                      key={cartridge.id}
+                      className="hover:bg-gray-50 cursor-pointer"
+                      onClick={() => window.location.href = '/cartridges/' + cartridge.id}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded flex items-center justify-center">
                           {cartridge.imageUrl ? (
                             <img
                               src={getImageUrl(cartridge.imageUrl) || ''}
-                              alt={`${cartridge.brand.name} ${cartridge.modelName}`}
+                              alt={cartridge.brand.name + ' ' + cartridge.modelName}
                               className="max-w-[90%] max-h-[90%] object-contain"
                             />
                           ) : (
@@ -269,7 +249,7 @@ export default function CartridgesPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900 hover:text-primary-600">
                           {cartridge.brand.name} {cartridge.modelName}
                         </div>
                         <div className="text-sm text-gray-500">{cartridge.brand.country}</div>
@@ -280,38 +260,21 @@ export default function CartridgesPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {cartridge.outputVoltage ? `${cartridge.outputVoltage}mV` : '-'}
+                        {cartridge.outputVoltage ? cartridge.outputVoltage + 'mV' : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {cartridge.outputImpedance ? `${cartridge.outputImpedance}Ω` : '-'}
+                        {cartridge.outputImpedance ? cartridge.outputImpedance + 'Ω' : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {cartridge.compliance ? `${cartridge.compliance}µm/mN` : '-'}
+                        {cartridge.compliance ? cartridge.compliance + 'µm/mN' : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {cartridge.trackingForceMin && cartridge.trackingForceMax
-                          ? `${cartridge.trackingForceMin}-${cartridge.trackingForceMax}g`
+                          ? cartridge.trackingForceMin + '-' + cartridge.trackingForceMax + 'g'
                           : '-'}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate" title={cartridge.stylusType || ''}>
                         {cartridge.stylusType || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {cartridge.cantilevMaterial || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {cartridge.loadImpedance ? `${cartridge.loadImpedance}Ω` : '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {cartridge.outputType ? (
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                            cartridge.outputType === 'low'
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-green-100 text-green-800'
-                          }`}>
-                            {cartridge.outputType}
-                          </span>
-                        ) : '-'}
                       </td>
                     </tr>
                   ))}
@@ -325,93 +288,90 @@ export default function CartridgesPage() {
         {viewMode === 'grid' && (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCartridges.map((cartridge) => (
-            <div
-              key={cartridge.id}
-              className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden border"
-            >
-              {/* Image Placeholder */}
-              <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                {cartridge.imageUrl ? (
-                  <img
-                    src={getImageUrl(cartridge.imageUrl) || ''}
-                    alt={`${cartridge.brand.name} ${cartridge.modelName}`}
-                    className="max-w-[80%] max-h-[80%] object-contain"
-                  />
-                ) : (
-                  <div className="text-gray-400 text-6xl">💿</div>
-                )}
-              </div>
-
-              {/* Content */}
-              <div className="p-5">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {cartridge.brand.name} {cartridge.modelName}
-                    </h3>
-                    <p className="text-sm text-gray-500">{cartridge.brand.country}</p>
-                  </div>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-                    {cartridge.cartridgeType}
-                  </span>
-                </div>
-
-                {/* Specs */}
-                <div className="space-y-1 text-sm text-gray-600 mb-4">
-                  {cartridge.outputVoltage && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Output:</span>
-                      <span>{cartridge.outputVoltage}mV</span>
-                    </div>
-                  )}
-                  {cartridge.outputImpedance && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Impedance:</span>
-                      <span>{cartridge.outputImpedance}Ω</span>
-                    </div>
-                  )}
-                  {cartridge.compliance && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Compliance:</span>
-                      <span>{cartridge.compliance}µm/mN</span>
-                    </div>
-                  )}
-                  {cartridge.trackingForceMin && cartridge.trackingForceMax && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Tracking Force:</span>
-                      <span>{cartridge.trackingForceMin}-{cartridge.trackingForceMax}g</span>
-                    </div>
-                  )}
-                  {cartridge.stylusType && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Stylus:</span>
-                      <span className="text-right">{cartridge.stylusType}</span>
-                    </div>
+              <Link
+                key={cartridge.id}
+                href={'/cartridges/' + cartridge.id}
+                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden border group"
+              >
+                {/* Image Placeholder */}
+                <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                  {cartridge.imageUrl ? (
+                    <img
+                      src={getImageUrl(cartridge.imageUrl) || ''}
+                      alt={cartridge.brand.name + ' ' + cartridge.modelName}
+                      className="max-w-[80%] max-h-[80%] object-contain"
+                    />
+                  ) : (
+                    <div className="text-gray-400 text-6xl">💿</div>
                   )}
                 </div>
 
-                {/* Data Source */}
-                {cartridge.dataSource && (
-                  <div className="pt-3 border-t border-gray-100">
-                    <p className="text-xs text-gray-500">
-                      Source:{' '}
-                      {cartridge.dataSourceUrl ? (
-                        <a
-                          href={cartridge.dataSourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary-600 hover:underline"
-                        >
-                          {cartridge.dataSource}
-                        </a>
-                      ) : (
-                        cartridge.dataSource
-                      )}
-                    </p>
+                {/* Content */}
+                <div className="p-5">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+                        {cartridge.brand.name} {cartridge.modelName}
+                      </h3>
+                      <p className="text-sm text-gray-500">{cartridge.brand.country}</p>
+                    </div>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                      {cartridge.cartridgeType}
+                    </span>
                   </div>
-                )}
-              </div>
-            </div>
+
+                  {/* Specs */}
+                  <div className="space-y-1 text-sm text-gray-600 mb-4">
+                    {cartridge.outputVoltage && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Output:</span>
+                        <span>{cartridge.outputVoltage}mV</span>
+                      </div>
+                    )}
+                    {cartridge.compliance && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Compliance:</span>
+                        <span>{cartridge.compliance}µm/mN</span>
+                      </div>
+                    )}
+                    {cartridge.trackingForceMin && cartridge.trackingForceMax && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Tracking Force:</span>
+                        <span>{cartridge.trackingForceMin}-{cartridge.trackingForceMax}g</span>
+                      </div>
+                    )}
+                    {cartridge.stylusType && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Stylus:</span>
+                        <span className="text-right">{cartridge.stylusType}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Data Source */}
+                  {cartridge.dataSource && (
+                    <div className="pt-3 border-t border-gray-100">
+                      <p className="text-xs text-gray-500">
+                        Source:{' '}
+                        {cartridge.dataSourceUrl ? (
+                          <span
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              window.open(cartridge.dataSourceUrl!, '_blank');
+                            }}
+                            className="text-primary-600 hover:underline cursor-pointer"
+                          >
+                            {cartridge.dataSource}
+                          </span>
+                        ) : (
+                          cartridge.dataSource
+                        )}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </Link>
             ))}
           </div>
         )}
