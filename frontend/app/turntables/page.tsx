@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import RichTextEditor from '@/components/shared/RichTextEditor';
 import api from '@/lib/api';
 
@@ -42,14 +43,14 @@ export default function TurntablesPage() {
   const [driveTypeFilter, setDriveTypeFilter] = useState<string>('all');
   const [isEditMode, setIsEditMode] = useState(false);
   const [pageDescription, setPageDescription] = useState(
-    `<p>Browse our collection of ${turntables.length} classic turntables from renowned manufacturers</p>`
+    '<p>Browse our collection of classic turntables from renowned manufacturers</p>'
   );
 
   // Helper function to get full image URL
   const getImageUrl = (imageUrl: string | null) => {
     if (!imageUrl) return null;
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:4000';
-    return imageUrl.startsWith('http') ? imageUrl : `${apiBaseUrl}${imageUrl}`;
+    return imageUrl.startsWith('http') ? imageUrl : apiBaseUrl + imageUrl;
   };
 
   useEffect(() => {
@@ -91,13 +92,12 @@ export default function TurntablesPage() {
   useEffect(() => {
     if (!isEditMode && !localStorage.getItem('turntables_page_description')) {
       setPageDescription(
-        `<p>Browse our collection of ${turntables.length} classic turntables from renowned manufacturers</p>`
+        '<p>Browse our collection of ' + turntables.length + ' classic turntables from renowned manufacturers</p>'
       );
     }
   }, [turntables.length, isEditMode]);
 
   const handleSaveDescription = () => {
-    // 여기에 저장 로직을 추가할 수 있습니다 (예: localStorage 또는 API)
     localStorage.setItem('turntables_page_description', pageDescription);
     setIsEditMode(false);
   };
@@ -108,7 +108,7 @@ export default function TurntablesPage() {
       setPageDescription(saved);
     } else {
       setPageDescription(
-        `<p>Browse our collection of ${turntables.length} classic turntables from renowned manufacturers</p>`
+        '<p>Browse our collection of ' + turntables.length + ' classic turntables from renowned manufacturers</p>'
       );
     }
     setIsEditMode(false);
@@ -160,12 +160,12 @@ export default function TurntablesPage() {
           {isEditMode ? (
             <div className="bg-white p-4 rounded-lg shadow-sm border border-primary-200">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                페이지 설명 편집
+                Edit Page Description
               </label>
               <RichTextEditor
                 value={pageDescription}
                 onChange={setPageDescription}
-                placeholder="페이지 설명을 입력하세요..."
+                placeholder="Enter page description..."
                 className="mb-3"
               />
               <div className="flex justify-end space-x-2">
@@ -173,13 +173,13 @@ export default function TurntablesPage() {
                   onClick={handleCancelEdit}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                 >
-                  취소
+                  Cancel
                 </button>
                 <button
                   onClick={handleSaveDescription}
                   className="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md hover:bg-primary-700"
                 >
-                  저장
+                  Save
                 </button>
               </div>
             </div>
@@ -250,17 +250,18 @@ export default function TurntablesPage() {
         {/* Turntables Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTurntables.map((turntable) => (
-            <div
+            <Link
               key={turntable.id}
-              className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden border"
+              href={'/turntables/' + turntable.id}
+              className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden border group"
             >
-              {/* Image Placeholder */}
-              <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+              {/* Image */}
+              <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden">
                 {turntable.imageUrl ? (
                   <img
                     src={getImageUrl(turntable.imageUrl) || ''}
-                    alt={`${turntable.brand.name} ${turntable.modelName}`}
-                    className="max-w-[80%] max-h-[80%] object-contain"
+                    alt={turntable.brand.name + ' ' + turntable.modelName}
+                    className="max-w-[80%] max-h-[80%] object-contain group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (
                   <div className="text-gray-400 text-6xl">🎚️</div>
@@ -271,7 +272,7 @@ export default function TurntablesPage() {
               <div className="p-5">
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
                       {turntable.brand.name} {turntable.modelName}
                     </h3>
                     <p className="text-sm text-gray-500">{turntable.brand.country}</p>
@@ -303,28 +304,14 @@ export default function TurntablesPage() {
                   )}
                 </div>
 
-                {/* Data Source */}
-                {turntable.dataSource && (
-                  <div className="pt-3 border-t border-gray-100">
-                    <p className="text-xs text-gray-500">
-                      Source:{' '}
-                      {turntable.dataSourceUrl ? (
-                        <a
-                          href={turntable.dataSourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary-600 hover:underline"
-                        >
-                          {turntable.dataSource}
-                        </a>
-                      ) : (
-                        turntable.dataSource
-                      )}
-                    </p>
-                  </div>
-                )}
+                {/* View Details Hint */}
+                <div className="pt-3 border-t border-gray-100">
+                  <span className="text-sm text-primary-600 group-hover:underline">
+                    View details →
+                  </span>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 

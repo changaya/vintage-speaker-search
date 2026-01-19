@@ -102,17 +102,21 @@ export default function CartridgesPage() {
     }
   };
 
-  const handleFormSubmit = async (data: any) => {
+  const handleFormSubmit = async (data: any): Promise<string | undefined> => {
     try {
+      let componentId: string | undefined;
       if (editingData?.id) {
         await api.put(`/api/cartridges/${editingData.id}`, data);
+        componentId = editingData.id;
         toast.success('Cartridge updated successfully');
       } else {
-        await api.post('/api/cartridges', data);
+        const response = await api.post('/api/cartridges', data);
+        componentId = response.data.id;
         toast.success('Cartridge created successfully');
       }
       setShowForm(false);
       fetchCartridges();
+      return componentId;
     } catch (error: any) {
       console.error('Submit error:', error);
       const message = error.response?.data?.message || 'Failed to save cartridge';

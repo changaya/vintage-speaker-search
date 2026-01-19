@@ -1,18 +1,21 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createTonearmSchema, updateTonearmSchema } from '@vintage-audio/shared';
 import { z } from 'zod';
 import { FormInput, FormSelect, FormSection } from '@/components/admin/forms';
 import BrandSelect from '@/components/admin/BrandSelect';
-import ImageUpload from '@/components/admin/ImageUpload';
+import MultiImageUpload, { ComponentImage } from '@/components/admin/MultiImageUpload';
+import { api } from '@/lib/api';
+import toast from 'react-hot-toast';
 
 type TonearmFormData = z.infer<typeof createTonearmSchema>;
 
 interface TonearmFormProps {
   initialData?: Partial<TonearmFormData> & { id?: string };
-  onSubmit: (data: TonearmFormData) => Promise<void>;
+  onSubmit: (data: TonearmFormData) => Promise<string | undefined>;
   onCancel: () => void;
   isEditing?: boolean;
 }
@@ -24,6 +27,8 @@ interface TonearmFormProps {
  * Integrates with shared validation schemas from @vintage-audio/shared.
  */
 export const TonearmForm = ({ initialData, onSubmit, onCancel, isEditing = false }: TonearmFormProps) => {
+  const [images, setImages] = useState<ComponentImage[]>([]);
+
   const {
     register,
     handleSubmit,
@@ -50,11 +55,70 @@ export const TonearmForm = ({ initialData, onSubmit, onCancel, isEditing = false
   });
 
   const brandId = watch('brandId');
-  const imageUrl = watch('imageUrl');
+
+  // Fetch component images when editing
+  useEffect(() => {
+    const fetchComponentImages = async () => {
+      if (isEditing && initialData?.id) {
+        try {
+          const response = await api.get(`/api/component-images/tonearm/${initialData.id}`);
+          const fetchedImages: ComponentImage[] = (response.data.images || []).map((img: any) => ({
+            id: img.id,
+            url: img.url,
+            isPrimary: img.isPrimary,
+            sortOrder: img.sortOrder,
+            isNew: false,
+          }));
+          setImages(fetchedImages);
+        } catch (error) {
+          console.error('Failed to fetch component images:', error);
+          setImages([]);
+        }
+      }
+    };
+    fetchComponentImages();
+  }, [isEditing, initialData?.id]);
+
+  const saveComponentImages = async (componentId: string) => {
+    try {
+      const imagesPayload = images.map((img, index) => ({
+        id: img.id && img.id > 0 ? img.id : undefined,
+        url: img.url,
+        isPrimary: img.isPrimary,
+        sortOrder: index,
+      }));
+
+      await api.put(`/api/component-images/tonearm/${componentId}`, {
+        images: imagesPayload,
+      });
+    } catch (error) {
+      console.error('Failed to save component images:', error);
+      toast.error('Failed to save images');
+    }
+  };
 
   const handleFormSubmit = async (data: TonearmFormData) => {
-    await onSubmit(data);
+    // Get primary image URL for backward compatibility
+    const primaryImage = images.find(img => img.isPrimary);
+    const primaryImageUrl = primaryImage?.url || images[0]?.url || data.imageUrl;
+
+    const submitData = {
+      ...data,
+      imageUrl: primaryImageUrl,
+    };
+
+    // onSubmit returns the component ID (for new components)
+    const returnedId = await onSubmit(submitData);
+
+    // Save component images after main form submission
+    if (images.length > 0) {
+      const componentId = returnedId || initialData?.id;
+      if (componentId) {
+        await saveComponentImages(componentId);
+      }
+    }
   };
+
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
@@ -206,10 +270,11 @@ export const TonearmForm = ({ initialData, onSubmit, onCancel, isEditing = false
         description="Image and data source information"
       >
         <div className="md:col-span-2">
-          <ImageUpload
-            currentImageUrl={imageUrl}
-            onImageUploaded={(url) => setValue('imageUrl', url)}
-            label="Tonearm Image"
+          <MultiImageUpload
+            componentType="tonearm"
+            componentId={initialData?.id ? Number(initialData.id) : null}
+            images={images}
+            onImagesChange={setImages}
           />
           {errors.imageUrl && (
             <p className="text-sm text-red-600 mt-1">{errors.imageUrl.message}</p>

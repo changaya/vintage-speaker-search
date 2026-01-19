@@ -105,17 +105,21 @@ export default function SUTsPage() {
     }
   };
 
-  const handleFormSubmit = async (data: any) => {
+  const handleFormSubmit = async (data: any): Promise<string | undefined> => {
     try {
+      let componentId: string | undefined;
       if (editingData?.id) {
         await api.put(`/api/suts/${editingData.id}`, data);
+        componentId = editingData.id;
         toast.success('SUT updated successfully');
       } else {
-        await api.post('/api/suts', data);
+        const response = await api.post('/api/suts', data);
+        componentId = response.data.id;
         toast.success('SUT created successfully');
       }
       setShowForm(false);
       fetchSUTs();
+      return componentId;
     } catch (error: any) {
       console.error('Submit error:', error);
       const message = error.response?.data?.message || 'Failed to save SUT';

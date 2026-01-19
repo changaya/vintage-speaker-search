@@ -20,6 +20,7 @@ import phonoPreampsRoutes from './routes/phonopreamps.routes';
 import uploadRoutes from './routes/upload.routes';
 import matcherRoutes from './routes/matcher.routes';
 import statsRoutes from './routes/stats.routes';
+import componentImagesRoutes from './routes/component-images.routes';
 
 // Load environment variables
 dotenv.config();
@@ -68,6 +69,7 @@ app.use('/api/phono-preamps', phonoPreampsRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/matcher', matcherRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/component-images', componentImagesRoutes);
 
 // API root
 app.get('/api', (req: Request, res: Response) => {
@@ -86,6 +88,7 @@ app.get('/api', (req: Request, res: Response) => {
       upload: '/api/upload',
       matcher: '/api/matcher',
       stats: '/api/stats',
+      componentImages: '/api/component-images',
     }
   });
 });
@@ -98,9 +101,9 @@ app.use(errorHandler);
 
 // Start server
 const server = app.listen(PORT, () => {
-  logger.info(`🚀 Server running on http://localhost:${PORT}`);
-  logger.info(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  logger.info(`💾 Database: Connected to PostgreSQL`);
+  logger.info('Server running on http://localhost:' + PORT);
+  logger.info('Environment: ' + (process.env.NODE_ENV || 'development'));
+  logger.info('Database: Connected to MySQL');
 });
 
 // Graceful shutdown

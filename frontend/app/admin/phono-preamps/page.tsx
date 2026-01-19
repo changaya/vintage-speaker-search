@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import AuthGuard from '@/components/admin/AuthGuard';
 import AdminNav from '@/components/admin/AdminNav';
-import ImageUpload from '@/components/admin/ImageUpload';
+import MultiImageUpload, { ComponentImage } from '@/components/admin/MultiImageUpload';
 import BrandSelect from '@/components/admin/BrandSelect';
 import { TagInput } from '@/components/admin/forms';
 import { api } from '@/lib/api';
@@ -93,6 +93,7 @@ export default function PhonoPreampPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingPreamp, setEditingPreamp] = useState<PhonoPreamp | undefined>();
+  const [images, setImages] = useState<ComponentImage[]>([]);
   const [formData, setFormData] = useState<PhonoPreampFormData>({
     brandId: '',
     modelName: '',
@@ -154,6 +155,41 @@ export default function PhonoPreampPage() {
     }
   };
 
+  const fetchComponentImages = async (componentId: string) => {
+    try {
+      const response = await api.get(`/api/component-images/phonopreamp/${componentId}`);
+      const fetchedImages: ComponentImage[] = (response.data.images || []).map((img: any) => ({
+        id: img.id,
+        url: img.url,
+        isPrimary: img.isPrimary,
+        sortOrder: img.sortOrder,
+        isNew: false,
+      }));
+      setImages(fetchedImages);
+    } catch (error) {
+      console.error('Failed to fetch component images:', error);
+      setImages([]);
+    }
+  };
+
+  const saveComponentImages = async (componentId: string) => {
+    try {
+      const imagesPayload = images.map((img, index) => ({
+        id: img.id && img.id > 0 ? img.id : undefined,
+        url: img.url,
+        isPrimary: img.isPrimary,
+        sortOrder: index,
+      }));
+
+      await api.put(`/api/component-images/phonopreamp/${componentId}`, {
+        images: imagesPayload,
+      });
+    } catch (error) {
+      console.error('Failed to save component images:', error);
+      toast.error('Failed to save images');
+    }
+  };
+
   useEffect(() => {
     fetchPhonoPreamps();
     fetchBrands();
@@ -161,6 +197,7 @@ export default function PhonoPreampPage() {
 
   const handleCreate = () => {
     setEditingPreamp(undefined);
+    setImages([]);
     setFormData({
       brandId: '',
       modelName: '',
@@ -247,6 +284,9 @@ export default function PhonoPreampPage() {
         dataSourceUrl: fullPreamp.dataSourceUrl || '',
         imageUrl: fullPreamp.imageUrl || '',
       });
+
+      // Fetch component images
+      await fetchComponentImages(preamp.id);
       setShowForm(true);
     } catch (error) {
       console.error('Failed to fetch phono preamp details:', error);
@@ -272,6 +312,10 @@ export default function PhonoPreampPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Get primary image URL for backward compatibility
+    const primaryImage = images.find(img => img.isPrimary);
+    const primaryImageUrl = primaryImage?.url || images[0]?.url || formData.imageUrl?.trim() || undefined;
 
     // Clean up payload: convert empty strings to undefined
     const payload = {
@@ -310,17 +354,27 @@ export default function PhonoPreampPage() {
       specSheetUrl: formData.specSheetUrl?.trim() || undefined,
       dataSource: formData.dataSource?.trim() || undefined,
       dataSourceUrl: formData.dataSourceUrl?.trim() || undefined,
-      imageUrl: formData.imageUrl?.trim() || undefined,
+      imageUrl: primaryImageUrl,
     };
 
     try {
+      let componentId: string;
+
       if (editingPreamp) {
         await api.put(`/api/phono-preamps/${editingPreamp.id}`, payload);
+        componentId = editingPreamp.id;
         toast.success('Phono preamp updated successfully');
       } else {
-        await api.post('/api/phono-preamps', payload);
+        const response = await api.post('/api/phono-preamps', payload);
+        componentId = response.data.id;
         toast.success('Phono preamp created successfully');
       }
+
+      // Save component images
+      if (images.length > 0) {
+        await saveComponentImages(componentId);
+      }
+
       setShowForm(false);
       fetchPhonoPreamps();
     } catch (error: any) {
@@ -442,7 +496,7 @@ export default function PhonoPreampPage() {
                   <div className="grid md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        MM Input Impedance (Ω)
+                        MM Input Impedance (Ohm)
                       </label>
                       <input
                         type="number"
@@ -492,7 +546,7 @@ export default function PhonoPreampPage() {
                   <div className="grid md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        MC Input Impedance (Ω) *
+                        MC Input Impedance (Ohm) *
                       </label>
                       <input
                         type="text"
@@ -581,7 +635,7 @@ export default function PhonoPreampPage() {
 
                     <div>
                       <TagInput
-                        label="Impedance Options (Ω)"
+                        label="Impedance Options (Ohm)"
                         value={JSON.parse(formData.impedanceOptions || '[]')}
                         onChange={(arr) => setFormData({ ...formData, impedanceOptions: JSON.stringify(arr) })}
                         suggestions={['100', '1000', '10000', '47000']}
@@ -888,15 +942,16 @@ export default function PhonoPreampPage() {
                   </div>
                 </div>
 
-                {/* Section 10: Image */}
+                {/* Section 10: Images */}
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 mb-3 pb-2 border-b">
-                    Image
+                    Images
                   </h3>
-                  <ImageUpload
-                    currentImageUrl={formData.imageUrl}
-                    onImageUploaded={(url) => setFormData({ ...formData, imageUrl: url })}
-                    label="Phono Preamp Image"
+                  <MultiImageUpload
+                    componentType="phonopreamp"
+                    componentId={editingPreamp ? Number(editingPreamp.id) : null}
+                    images={images}
+                    onImagesChange={setImages}
                   />
                 </div>
 

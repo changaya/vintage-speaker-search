@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import AuthGuard from '@/components/admin/AuthGuard';
 import AdminNav from '@/components/admin/AdminNav';
-import ImageUpload from '@/components/admin/ImageUpload';
+import MultiImageUpload, { ComponentImage } from '@/components/admin/MultiImageUpload';
 import BrandSelect from '@/components/admin/BrandSelect';
 import { api } from '@/lib/api';
 import { getImageUrl } from '@/lib/image-utils';
@@ -52,6 +52,7 @@ export default function TurntablesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingTurntable, setEditingTurntable] = useState<Turntable | undefined>();
+  const [images, setImages] = useState<ComponentImage[]>([]);
   const [formData, setFormData] = useState<TurntableFormData>({
     brandId: '',
     modelName: '',
@@ -87,6 +88,42 @@ export default function TurntablesPage() {
     }
   };
 
+  const fetchComponentImages = async (componentId: string) => {
+    try {
+      const response = await api.get(`/api/component-images/turntable/${componentId}`);
+      const fetchedImages: ComponentImage[] = (response.data.images || []).map((img: any) => ({
+        id: img.id,
+        url: img.url,
+        isPrimary: img.isPrimary,
+        sortOrder: img.sortOrder,
+        isNew: false,
+      }));
+      setImages(fetchedImages);
+    } catch (error) {
+      console.error('Failed to fetch component images:', error);
+      setImages([]);
+    }
+  };
+
+  const saveComponentImages = async (componentId: string) => {
+    try {
+      // Prepare images payload
+      const imagesPayload = images.map((img, index) => ({
+        id: img.id && img.id > 0 ? img.id : undefined,
+        url: img.url,
+        isPrimary: img.isPrimary,
+        sortOrder: index,
+      }));
+
+      await api.put(`/api/component-images/turntable/${componentId}`, {
+        images: imagesPayload,
+      });
+    } catch (error) {
+      console.error('Failed to save component images:', error);
+      toast.error('Failed to save images');
+    }
+  };
+
   useEffect(() => {
     fetchTurntables();
     fetchBrands();
@@ -94,6 +131,7 @@ export default function TurntablesPage() {
 
   const handleCreate = () => {
     setEditingTurntable(undefined);
+    setImages([]);
     setFormData({
       brandId: '',
       modelName: '',
@@ -127,6 +165,9 @@ export default function TurntablesPage() {
         dataSourceUrl: fullTurntable.dataSourceUrl || '',
         imageUrl: fullTurntable.imageUrl || '',
       });
+
+      // Fetch component images
+      await fetchComponentImages(turntable.id);
       setShowForm(true);
     } catch (error) {
       console.error('Failed to fetch turntable details:', error);
@@ -158,6 +199,10 @@ export default function TurntablesPage() {
       ? formData.speeds.split(',').map(s => s.trim()).filter(s => s)
       : undefined;
 
+    // Get primary image URL for backward compatibility
+    const primaryImage = images.find(img => img.isPrimary);
+    const primaryImageUrl = primaryImage?.url || images[0]?.url || undefined;
+
     const payload = {
       brandId: formData.brandId,
       modelName: formData.modelName,
@@ -168,17 +213,27 @@ export default function TurntablesPage() {
       weight: formData.weight ? Number(formData.weight) : undefined,
       dataSource: formData.dataSource?.trim() || undefined,
       dataSourceUrl: formData.dataSourceUrl?.trim() || undefined,
-      imageUrl: formData.imageUrl?.trim() || undefined,
+      imageUrl: primaryImageUrl,
     };
 
     try {
+      let componentId: string;
+
       if (editingTurntable) {
         await api.put(`/api/turntables/${editingTurntable.id}`, payload);
+        componentId = editingTurntable.id;
         toast.success('Turntable updated successfully');
       } else {
-        await api.post('/api/turntables', payload);
+        const response = await api.post('/api/turntables', payload);
+        componentId = response.data.id;
         toast.success('Turntable created successfully');
       }
+
+      // Save component images
+      if (images.length > 0) {
+        await saveComponentImages(componentId);
+      }
+
       setShowForm(false);
       fetchTurntables();
     } catch (error: any) {
@@ -186,6 +241,11 @@ export default function TurntablesPage() {
       const message = error.response?.data?.message || 'Failed to save turntable';
       toast.error(message);
     }
+  };
+
+  // Get display image (primary image from component images or fallback to imageUrl)
+  const getDisplayImage = (turntable: Turntable) => {
+    return turntable.imageUrl;
   };
 
   return (
@@ -340,13 +400,14 @@ export default function TurntablesPage() {
                   </div>
                 </div>
 
-                {/* Image */}
+                {/* Images */}
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-3 pb-2 border-b">Image</h3>
-                  <ImageUpload
-                    currentImageUrl={formData.imageUrl}
-                    onImageUploaded={(url) => setFormData({ ...formData, imageUrl: url })}
-                    label="Turntable Image"
+                  <h3 className="text-lg font-medium text-gray-900 mb-3 pb-2 border-b">Images</h3>
+                  <MultiImageUpload
+                    componentType="turntable"
+                    componentId={editingTurntable ? Number(editingTurntable.id) : null}
+                    images={images}
+                    onImagesChange={setImages}
                   />
                 </div>
 
@@ -394,9 +455,9 @@ export default function TurntablesPage() {
                   {turntables.map((turntable) => (
                     <tr key={turntable.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {turntable.imageUrl ? (
+                        {getDisplayImage(turntable) ? (
                           <img
-                            src={getImageUrl(turntable.imageUrl)!}
+                            src={getImageUrl(getDisplayImage(turntable)!)!}
                             alt={turntable.modelName}
                             className="h-12 w-12 rounded object-cover"
                           />
