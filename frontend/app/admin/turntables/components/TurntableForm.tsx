@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createCartridgeSchema, updateCartridgeSchema } from '@vintage-audio/shared';
 import { z } from 'zod';
 import { FormInput, FormSelect, Accordion, AccordionItem } from '@/components/admin/forms';
 import BrandSelect from '@/components/admin/BrandSelect';
@@ -11,29 +10,38 @@ import MultiImageUpload, { ComponentImage } from '@/components/admin/MultiImageU
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
 
-type CartridgeFormData = z.infer<typeof createCartridgeSchema>;
+// Define schema locally since turntable schema may have complex tonearmMounting
+const turntableFormSchema = z.object({
+  brandId: z.string().min(1, 'Brand is required'),
+  modelName: z.string().min(1, 'Model name is required'),
+  driveType: z.string().optional(),
+  motorType: z.string().optional(),
+  speeds: z.union([z.string(), z.array(z.number())]).optional(),
+  wowFlutter: z.number().positive().optional().nullable(),
+  weight: z.number().positive().optional().nullable(),
+  imageUrl: z.string().optional(),
+  dataSource: z.string().optional(),
+  dataSourceUrl: z.string().url().optional().or(z.literal('')),
+});
 
-interface CartridgeFormProps {
-  initialData?: Partial<CartridgeFormData> & { id?: string };
-  onSubmit: (data: CartridgeFormData) => Promise<string | undefined>;
+type TurntableFormData = z.infer<typeof turntableFormSchema>;
+
+interface TurntableFormProps {
+  initialData?: Partial<TurntableFormData> & { id?: string };
+  onSubmit: (data: any) => Promise<string | undefined>;
   onCancel: () => void;
   isEditing?: boolean;
 }
 
-/**
- * CartridgeForm Component
- *
- * Manages cartridge creation and editing with react-hook-form + Zod validation.
- * Uses Accordion structure for better organization of 12 visible fields.
- *
- * Sections:
- * 1. Basic Information (Required)
- * 2. Output Characteristics
- * 3. Mechanical Properties
- * 4. Documentation
- */
-export const CartridgeForm = ({ initialData, onSubmit, onCancel, isEditing = false }: CartridgeFormProps) => {
+export const TurntableForm = ({ initialData, onSubmit, onCancel, isEditing = false }: TurntableFormProps) => {
   const [images, setImages] = useState<ComponentImage[]>([]);
+
+  // Convert speeds array to string for form display
+  const speedsToString = (speeds: any): string => {
+    if (!speeds) return '';
+    if (Array.isArray(speeds)) return speeds.join(', ');
+    return String(speeds);
+  };
 
   const {
     register,
@@ -41,19 +49,16 @@ export const CartridgeForm = ({ initialData, onSubmit, onCancel, isEditing = fal
     setValue,
     watch,
     formState: { errors, isSubmitting },
-  } = useForm<CartridgeFormData>({
-    resolver: zodResolver(isEditing ? updateCartridgeSchema : createCartridgeSchema),
+  } = useForm<TurntableFormData>({
+    resolver: zodResolver(turntableFormSchema),
     defaultValues: {
       brandId: initialData?.brandId || '',
       modelName: initialData?.modelName || '',
-      cartridgeType: initialData?.cartridgeType || 'MC',
-      outputVoltage: initialData?.outputVoltage,
-      outputImpedance: initialData?.outputImpedance,
-      compliance: initialData?.compliance,
-      trackingForceMin: initialData?.trackingForceMin,
-      trackingForceMax: initialData?.trackingForceMax,
-      stylusType: initialData?.stylusType || '',
-      channelSeparation: initialData?.channelSeparation,
+      driveType: initialData?.driveType || '',
+      motorType: initialData?.motorType || '',
+      speeds: speedsToString(initialData?.speeds),
+      wowFlutter: initialData?.wowFlutter ?? undefined,
+      weight: initialData?.weight ?? undefined,
       imageUrl: initialData?.imageUrl || '',
       dataSource: initialData?.dataSource || '',
       dataSourceUrl: initialData?.dataSourceUrl || '',
@@ -67,7 +72,7 @@ export const CartridgeForm = ({ initialData, onSubmit, onCancel, isEditing = fal
     const fetchComponentImages = async () => {
       if (isEditing && initialData?.id) {
         try {
-          const response = await api.get(`/api/component-images/cartridge/${initialData.id}`);
+          const response = await api.get(`/api/component-images/turntable/${initialData.id}`);
           const fetchedImages: ComponentImage[] = (response.data.images || []).map((img: any) => ({
             id: img.id,
             url: img.url,
@@ -94,7 +99,7 @@ export const CartridgeForm = ({ initialData, onSubmit, onCancel, isEditing = fal
         sortOrder: index,
       }));
 
-      await api.put(`/api/component-images/cartridge/${componentId}`, {
+      await api.put(`/api/component-images/turntable/${componentId}`, {
         images: imagesPayload,
       });
     } catch (error) {
@@ -103,13 +108,32 @@ export const CartridgeForm = ({ initialData, onSubmit, onCancel, isEditing = fal
     }
   };
 
-  const handleFormSubmit = async (data: CartridgeFormData) => {
+  const handleFormSubmit = async (data: TurntableFormData) => {
+    // Convert speeds string to array
+    const speedsArray =
+      typeof data.speeds === 'string'
+        ? data.speeds
+            .split(',')
+            .map((s) => s.trim())
+            .filter((s) => s)
+            .map(Number)
+            .filter((n) => !isNaN(n))
+        : data.speeds;
+
     // Get primary image URL for backward compatibility
-    const primaryImage = images.find(img => img.isPrimary);
+    const primaryImage = images.find((img) => img.isPrimary);
     const primaryImageUrl = primaryImage?.url || images[0]?.url || data.imageUrl;
 
     const submitData = {
-      ...data,
+      brandId: data.brandId,
+      modelName: data.modelName,
+      driveType: data.driveType?.trim() || undefined,
+      motorType: data.motorType?.trim() || undefined,
+      speeds: speedsArray?.length ? speedsArray : undefined,
+      wowFlutter: data.wowFlutter || undefined,
+      weight: data.weight || undefined,
+      dataSource: data.dataSource?.trim() || undefined,
+      dataSourceUrl: data.dataSourceUrl?.trim() || undefined,
       imageUrl: primaryImageUrl,
     };
 
@@ -125,10 +149,9 @@ export const CartridgeForm = ({ initialData, onSubmit, onCancel, isEditing = fal
     }
   };
 
-
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-      <Accordion defaultOpenSections={['basic', 'output']}>
+      <Accordion defaultOpenSections={['basic', 'specs']}>
         {/* Section 1: Basic Information */}
         <AccordionItem id="basic" title="Basic Information" badge="Required">
           <div>
@@ -160,89 +183,65 @@ export const CartridgeForm = ({ initialData, onSubmit, onCancel, isEditing = fal
           />
 
           <FormSelect
-            label="Cartridge Type"
+            label="Drive Type"
             options={[
-              { value: 'MM', label: 'MM (Moving Magnet)' },
-              { value: 'MC', label: 'MC (Moving Coil)' },
-              { value: 'MI', label: 'MI (Moving Iron)' },
-              { value: 'ceramic', label: 'Ceramic' },
-              { value: 'crystal', label: 'Crystal' },
+              { value: '', label: 'Select type...' },
+              { value: 'belt-drive', label: 'Belt Drive' },
+              { value: 'direct-drive', label: 'Direct Drive' },
+              { value: 'idler-drive', label: 'Idler Drive' },
             ]}
-            {...register('cartridgeType')}
-            error={errors.cartridgeType}
-            required
+            {...register('driveType')}
+            error={errors.driveType}
+          />
+
+          <FormSelect
+            label="Motor Type"
+            options={[
+              { value: '', label: 'Select type...' },
+              { value: 'AC', label: 'AC Motor' },
+              { value: 'DC', label: 'DC Motor' },
+              { value: 'synchronous', label: 'Synchronous' },
+              { value: 'servo', label: 'Servo Controlled' },
+            ]}
+            {...register('motorType')}
+            error={errors.motorType}
           />
 
           <FormInput
-            label="Stylus Type"
-            placeholder="e.g., Elliptical, Shibata, Line Contact"
-            {...register('stylusType')}
-            error={errors.stylusType}
+            label="Speeds"
+            placeholder="e.g., 33.33, 45"
+            helpText="Comma-separated values"
+            {...register('speeds')}
+            error={errors.speeds}
           />
         </AccordionItem>
 
-        {/* Section 2: Output Characteristics */}
-        <AccordionItem id="output" title="Output Characteristics">
+        {/* Section 2: Specifications */}
+        <AccordionItem id="specs" title="Specifications">
           <FormInput
-            label="Output Voltage (mV)"
+            label="Wow & Flutter (%)"
             type="number"
-            step="0.01"
-            {...register('outputVoltage', { valueAsNumber: true })}
-            error={errors.outputVoltage}
-            required
+            step="0.001"
+            placeholder="e.g., 0.025"
+            {...register('wowFlutter', { valueAsNumber: true })}
+            error={errors.wowFlutter}
           />
 
           <FormInput
-            label="Output Impedance (Ohm)"
+            label="Weight (kg)"
             type="number"
             step="0.1"
-            {...register('outputImpedance', { valueAsNumber: true })}
-            error={errors.outputImpedance}
-          />
-
-          <FormInput
-            label="Channel Separation (dB)"
-            type="number"
-            step="0.1"
-            {...register('channelSeparation', { valueAsNumber: true })}
-            error={errors.channelSeparation}
+            {...register('weight', { valueAsNumber: true })}
+            error={errors.weight}
           />
         </AccordionItem>
 
-        {/* Section 3: Mechanical Properties */}
-        <AccordionItem id="mechanical" title="Mechanical Properties">
-          <FormInput
-            label="Compliance (um/mN)"
-            type="number"
-            step="0.1"
-            {...register('compliance', { valueAsNumber: true })}
-            error={errors.compliance}
-            helpText="Dynamic compliance (typically 10Hz or 100Hz)"
-          />
-
-          <FormInput
-            label="Tracking Force Min (g)"
-            type="number"
-            step="0.1"
-            {...register('trackingForceMin', { valueAsNumber: true })}
-            error={errors.trackingForceMin}
-          />
-
-          <FormInput
-            label="Tracking Force Max (g)"
-            type="number"
-            step="0.1"
-            {...register('trackingForceMax', { valueAsNumber: true })}
-            error={errors.trackingForceMax}
-          />
-        </AccordionItem>
-
-        {/* Section 4: Documentation */}
+        {/* Section 3: Documentation */}
         <AccordionItem id="documentation" title="Documentation">
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Cartridge Images</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Turntable Images</label>
             <MultiImageUpload
-              componentType="cartridge"
+              componentType="turntable"
               componentId={initialData?.id ? Number(initialData.id) : null}
               images={images}
               onImagesChange={setImages}
@@ -254,7 +253,7 @@ export const CartridgeForm = ({ initialData, onSubmit, onCancel, isEditing = fal
 
           <FormInput
             label="Data Source"
-            placeholder="e.g., manufacturer, hifi-engine, vinylengine"
+            placeholder="e.g., manufacturer, hifi-engine"
             {...register('dataSource')}
             error={errors.dataSource}
           />
