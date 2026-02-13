@@ -45,7 +45,7 @@ export const searchDocuments = async (req: Request, res: Response) => {
     }
 
     if (category && typeof category === 'string') {
-      where.category = category;
+      where.category = category.toLowerCase();
     }
 
     // Text search - search in textContent or product names

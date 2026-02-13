@@ -208,9 +208,9 @@ export const SearchBar = ({
                 <span className="font-medium">{tag.productName}</span>
                 <span className="text-sm text-gray-500">{tag.brand}</span>
               </div>
-              {tag._count?.documents && (
+              {tag.documentCount != null && tag.documentCount > 0 && (
                 <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">
-                  {tag._count.documents} docs
+                  {tag.documentCount} docs
                 </span>
               )}
             </li>

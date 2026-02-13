@@ -45,7 +45,9 @@ export interface ProductTag {
   id: number;
   brand: string;
   productName: string;
-  _count?: { documents: number };
+  productType?: string | null;
+  description?: string | null;
+  documentCount?: number;
 }
 
 export interface SearchParams {
@@ -107,8 +109,8 @@ export async function getProductTags(params: ProductTagParams = {}): Promise<Pro
   if (params.brand) queryParams.append('brand', params.brand);
   if (params.search) queryParams.append('search', params.search);
 
-  const response = await api.get<{ data: ProductTag[] }>(`/api/products/tags?${queryParams.toString()}`);
-  return response.data.data;
+  const response = await api.get<ProductTag[]>(`/api/products/tags?${queryParams.toString()}`);
+  return response.data;
 }
 
 /**
