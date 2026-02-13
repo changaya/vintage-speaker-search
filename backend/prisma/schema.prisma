@@ -674,3 +674,56 @@ model ComponentImage {
   @@index([componentType, componentId])
   @@index([deletedAt])
 }
+
+// ============================================================================
+// DOCUMENT SEARCH (Altec/JBL Technical Documents)
+// ============================================================================
+
+// Document - Metadata for scanned technical documents
+model Document {
+  id            Int      @id @default(autoincrement())
+  brand         String   // "altec" | "jbl"
+  category      String   // "catalogs", "specs", "plans", "reference"
+  subCategory   String?  // "home-speakers", "pro-comp" etc.
+  year          String?  // "1974", "1960s" etc.
+  filePath      String   @unique // Original image path
+  textPath      String   @unique // Extracted text path
+  textContent   String   @db.Text // Full text content (for search)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  products      DocumentProduct[]
+
+  @@index([brand])
+  @@index([category])
+}
+
+// ProductTag - Product tags for document categorization
+model ProductTag {
+  id            Int      @id @default(autoincrement())
+  brand         String   // "altec" | "jbl"
+  productName   String   // "604", "D130", "L100" etc.
+  productType   String?  // "driver", "horn", "network", "system" etc.
+  description   String?  // Product description (optional)
+  createdAt     DateTime @default(now())
+
+  documents     DocumentProduct[]
+
+  @@unique([brand, productName])
+  @@index([productName])
+}
+
+// DocumentProduct - Document-Product relationship (N:M)
+model DocumentProduct {
+  id          Int         @id @default(autoincrement())
+  documentId  Int
+  productId   Int
+  confidence  Float       @default(1.0) // Tagging confidence (0-1)
+  mentions    Int         @default(1)   // Number of mentions in document
+
+  document    Document    @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  product     ProductTag  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, productId])
+  @@index([productId])
+}

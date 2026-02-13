@@ -21,6 +21,8 @@ import uploadRoutes from './routes/upload.routes';
 import matcherRoutes from './routes/matcher.routes';
 import statsRoutes from './routes/stats.routes';
 import componentImagesRoutes from './routes/component-images.routes';
+import docsRoutes from './routes/docs.routes';
+import productTagsRoutes from './routes/product-tags.routes';
 
 // Load environment variables
 dotenv.config();
@@ -70,6 +72,8 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/matcher', matcherRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/component-images', componentImagesRoutes);
+app.use('/api/docs', docsRoutes);
+app.use('/api/products/tags', productTagsRoutes);
 
 // API root
 app.get('/api', (req: Request, res: Response) => {
@@ -89,6 +93,8 @@ app.get('/api', (req: Request, res: Response) => {
       matcher: '/api/matcher',
       stats: '/api/stats',
       componentImages: '/api/component-images',
+      docs: '/api/docs',
+      productTags: '/api/products/tags',
     }
   });
 });
