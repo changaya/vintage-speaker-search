@@ -33,7 +33,7 @@ const PRODUCT_PATTERNS: Record<'altec' | 'jbl', RegExp[]> = {
     /\bN[0-9]{3,4}\b/gi, // N400, N1200
     /\b2[234][0-9]{2}[A-Z]?\b/gi, // 2231A, 2420
     /\b(075|077)\b/gi, // 075, 077
-    /\b[0-9]{3}[A-Z]\b/gi, // 130A, 375A
+    /\b(130|131|136|140|150|175|275|375|435|460|2215|2225)[A-Z]?\b/gi, // Known JBL bare model numbers
   ],
 };
 

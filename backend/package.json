@@ -19,6 +19,8 @@
     "update-specs": "tsx scripts/update-turntable-specs.ts",
     "calc-compat": "tsx scripts/calculate-compatibilities.ts",
     "test-matching": "tsx scripts/test-matching.ts",
+    "test": "jest --config jest.config.ts",
+    "test:watch": "jest --config jest.config.ts --watch",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\""
   },
@@ -54,14 +56,19 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/multer": "^1.4.11",
     "@types/node": "^20.10.6",
+    "@types/supertest": "^6.0.3",
     "@typescript-eslint/eslint-plugin": "^6.18.0",
     "@typescript-eslint/parser": "^6.18.0",
     "eslint": "^8.56.0",
+    "jest": "^30.2.0",
     "prettier": "^3.1.1",
     "prisma": "^5.22.0",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.6",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   }

@@ -696,6 +696,7 @@ model Document {
 
   @@index([brand])
   @@index([category])
+  @@fulltext([textContent])
 }
 
 // ProductTag - Product tags for document categorization

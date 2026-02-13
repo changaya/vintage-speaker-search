@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import { prisma } from '../utils/prisma';
 import {
   handlePrismaError,
@@ -8,9 +9,6 @@ import {
 } from '../utils/error-response.util';
 import path from 'path';
 import fs from 'fs';
-
-// Base path for document images
-const DOCS_BASE_PATH = process.env.DOCS_BASE_PATH || '/Users/alex/Library/Mobile Documents/com~apple~CloudDocs/Technical Reference';
 
 /**
  * Search documents
@@ -38,7 +36,7 @@ export const searchDocuments = async (req: Request, res: Response) => {
     const skip = (pageNum - 1) * limitNum;
 
     // Build where clause
-    const where: any = {};
+    const where: Prisma.DocumentWhereInput = {};
 
     if (brand && typeof brand === 'string') {
       where.brand = brand.toLowerCase();
@@ -255,7 +253,7 @@ export const getProductTags = async (req: Request, res: Response) => {
     const limitNum = Math.min(100, Math.max(1, parseInt(limit as string, 10) || 50));
 
     // Build where clause
-    const where: any = {};
+    const where: Prisma.ProductTagWhereInput = {};
 
     if (brand && typeof brand === 'string') {
       where.brand = brand.toLowerCase();
