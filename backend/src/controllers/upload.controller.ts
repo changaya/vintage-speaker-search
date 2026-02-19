@@ -5,6 +5,49 @@ import path from 'path';
 import fs from 'fs';
 
 /**
+ * Upload images from ZIP file
+ * POST /api/upload/zip
+ */
+export const uploadZipImages = async (req: Request, res: Response) => {
+  try {
+    const processedImages = (req as any).processedZipImages;
+    const stats = (req as any).zipImageStats;
+
+    if (!processedImages || processedImages.length === 0) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'No images processed from ZIP file',
+      });
+    }
+
+    const response: any = {
+      success: true,
+      message: `${processedImages.length} image(s) extracted and processed`,
+      images: processedImages.map((img: any) => ({
+        filename: img.filename,
+        url: img.url,
+        originalName: img.originalName,
+      })),
+    };
+
+    // Add warning if images were truncated
+    if (stats?.warning) {
+      response.warning = stats.warning;
+      response.totalFound = stats.totalFound;
+      response.processed = stats.processed;
+    }
+
+    res.status(201).json(response);
+  } catch (error) {
+    console.error('Upload ZIP images error:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to upload images from ZIP',
+    });
+  }
+};
+
+/**
  * Upload single image
  * POST /api/upload/image
  */

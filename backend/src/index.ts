@@ -21,6 +21,8 @@ import uploadRoutes from './routes/upload.routes';
 import matcherRoutes from './routes/matcher.routes';
 import statsRoutes from './routes/stats.routes';
 import componentImagesRoutes from './routes/component-images.routes';
+import docsRoutes from './routes/docs.routes';
+import productTagsRoutes from './routes/product-tags.routes';
 
 // Load environment variables
 dotenv.config();
@@ -40,7 +42,9 @@ app.use(morgan(morganFormat, { stream: morganStream }));
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 1000, // Limit each IP to 1000 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
   message: 'Too many requests from this IP, please try again later.'
 });
 app.use('/api/', limiter);
@@ -70,6 +74,8 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/matcher', matcherRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/component-images', componentImagesRoutes);
+app.use('/api/docs', docsRoutes);
+app.use('/api/products/tags', productTagsRoutes);
 
 // API root
 app.get('/api', (req: Request, res: Response) => {
@@ -89,6 +95,8 @@ app.get('/api', (req: Request, res: Response) => {
       matcher: '/api/matcher',
       stats: '/api/stats',
       componentImages: '/api/component-images',
+      docs: '/api/docs',
+      productTags: '/api/products/tags',
     }
   });
 });

@@ -90,8 +90,9 @@ api.interceptors.response.use(
       });
     }
 
-    // Show toast notification (except for 401 which redirects)
-    if (error.response?.status !== 401) {
+    // Show toast notification (except for 401 which redirects, or silent requests)
+    const isSilent = error.config?.silentError === true;
+    if (error.response?.status !== 401 && !isSilent) {
       toast.error(errorMessage, {
         duration: 5000,
         position: 'top-right',
