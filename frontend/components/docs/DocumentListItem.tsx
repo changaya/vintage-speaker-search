@@ -22,10 +22,11 @@ export const DocumentListItem = ({ document }: DocumentListItemProps) => {
     ? `${document.category} / ${document.subCategory}`
     : document.category;
 
+  // Keys are lowercase to match API response (brand stored lowercase in DB)
   const brandColors: Record<string, { bg: string; text: string }> = {
-    Altec: { bg: 'bg-amber-100', text: 'text-amber-800' },
-    JBL: { bg: 'bg-orange-100', text: 'text-orange-800' },
-    Phasemation: { bg: 'bg-purple-100', text: 'text-purple-800' },
+    altec: { bg: 'bg-amber-100', text: 'text-amber-800' },
+    jbl: { bg: 'bg-orange-100', text: 'text-orange-800' },
+    phasemation: { bg: 'bg-purple-100', text: 'text-purple-800' },
   };
   const brandStyle = brandColors[document.brand] || {
     bg: 'bg-gray-100',
@@ -61,7 +62,7 @@ export const DocumentListItem = ({ document }: DocumentListItemProps) => {
 
         {/* Brand Badge */}
         <span
-          className={`px-1.5 py-0.5 text-[10px] font-semibold rounded flex-shrink-0 ${brandStyle.bg} ${brandStyle.text}`}
+          className={`px-1.5 py-0.5 text-[10px] font-semibold rounded capitalize flex-shrink-0 ${brandStyle.bg} ${brandStyle.text}`}
         >
           {document.brand}
         </span>

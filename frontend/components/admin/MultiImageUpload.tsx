@@ -322,9 +322,71 @@ export default function MultiImageUpload({
     onImagesChange(updatedImages);
   };
 
+  /**
+   * Handle ZIP file upload
+   */
+  const handleZipUpload = async (file: File) => {
+    // Validate ZIP file size (50MB limit)
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error('ZIP file exceeds 50MB limit');
+      return;
+    }
+
+    try {
+      setUploading(true);
+
+      const formData = new FormData();
+      formData.append('zip', file);
+
+      const response = await api.post('/api/upload/zip', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      const uploadedImages = response.data.images || [];
+      const remainingSlots = maxImages - images.length;
+      const imagesToAdd = uploadedImages.slice(0, remainingSlots);
+
+      const newImages: ComponentImage[] = imagesToAdd.map((img: any, idx: number) => ({
+        id: generateLocalId(),
+        url: img.url,
+        isPrimary: images.length === 0 && idx === 0, // First image is primary if no existing images
+        sortOrder: images.length + idx,
+        isNew: true,
+      }));
+
+      onImagesChange([...images, ...newImages]);
+
+      // Show appropriate toast message
+      if (response.data.warning) {
+        toast.success(`${newImages.length} image(s) extracted from ZIP`);
+        toast(response.data.warning, { icon: '⚠️' });
+      } else {
+        toast.success(`${newImages.length} image(s) extracted from ZIP`);
+      }
+    } catch (error: any) {
+      console.error('ZIP upload error:', error);
+      const message = error.response?.data?.message || 'Failed to upload ZIP file';
+      toast.error(message);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
+
+    // Check if it's a ZIP file
+    const file = files[0];
+    if (file.name.toLowerCase().endsWith('.zip') || file.type === 'application/zip' || file.type === 'application/x-zip-compressed') {
+      await handleZipUpload(file);
+      return;
+    }
 
     // Check max limit
     const remainingSlots = maxImages - images.length;
@@ -334,7 +396,7 @@ export default function MultiImageUpload({
     }
 
     const filesToUpload = Array.from(files).slice(0, remainingSlots);
-    
+
     // Validate files
     for (const file of filesToUpload) {
       if (!file.type.startsWith('image/')) {
@@ -497,7 +559,7 @@ export default function MultiImageUpload({
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,.zip,application/zip"
             multiple
             onChange={handleFileUpload}
             className="hidden"
@@ -525,7 +587,7 @@ export default function MultiImageUpload({
               <span className="text-sm">Maximum images reached</span>
             ) : (
               <span className="text-sm text-gray-700">
-                + Add Images (click or select multiple)
+                + Add Images or ZIP file (click or select multiple)
               </span>
             )}
           </label>
@@ -569,8 +631,8 @@ export default function MultiImageUpload({
 
       {/* Help Text */}
       <p className="text-xs text-gray-500">
-        Upload multiple images or add from URLs. First image automatically becomes primary.
-        Max {maxImages} images, 5MB each.
+        Upload images, ZIP files, or add from URLs. First image automatically becomes primary.
+        Max {maxImages} images, 5MB each (or 50MB for ZIP).
       </p>
     </div>
   );

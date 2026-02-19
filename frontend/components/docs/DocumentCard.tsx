@@ -25,10 +25,11 @@ export const DocumentCard = ({ document, compact = false }: DocumentCardProps) =
     : document.category;
 
   // Brand color styling
+  // Keys are lowercase to match API response (brand stored lowercase in DB)
   const brandColors: Record<string, { bg: string; text: string }> = {
-    Altec: { bg: 'bg-amber-100', text: 'text-amber-800' },
-    JBL: { bg: 'bg-orange-100', text: 'text-orange-800' },
-    Phasemation: { bg: 'bg-purple-100', text: 'text-purple-800' },
+    altec: { bg: 'bg-amber-100', text: 'text-amber-800' },
+    jbl: { bg: 'bg-orange-100', text: 'text-orange-800' },
+    phasemation: { bg: 'bg-purple-100', text: 'text-purple-800' },
   };
   const brandStyle = brandColors[document.brand] || {
     bg: 'bg-gray-100',
@@ -67,7 +68,7 @@ export const DocumentCard = ({ document, compact = false }: DocumentCardProps) =
           )}
           {/* Brand badge */}
           <span
-            className={`absolute top-1 left-1 px-1.5 py-0.5 font-semibold rounded ${brandStyle.bg} ${brandStyle.text} ${
+            className={`absolute top-1 left-1 px-1.5 py-0.5 font-semibold rounded capitalize ${brandStyle.bg} ${brandStyle.text} ${
               compact ? 'text-[10px]' : 'text-xs'
             }`}
           >
