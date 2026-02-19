@@ -43,6 +43,9 @@ services:
       - ../shared:/app/shared
       - /app/backend/node_modules
       - ./uploads:/app/backend/uploads
+      - ../altec-library:/app/altec-library:ro
+      - ../jbl-library:/app/jbl-library:ro
+      - ../phasemation-library:/app/phasemation-library:ro
     depends_on:
       db:
         condition: service_healthy
